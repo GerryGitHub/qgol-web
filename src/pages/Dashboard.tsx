@@ -109,12 +109,14 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { data: quinielas, isLoading, isError } = useQuinielas();
   const crearQuiniela = useCrearQuiniela();
   const unirseQuiniela = useUnirseQuiniela();
   const [crearOpen, setCrearOpen] = useState(false);
   const [unirseOpen, setUnirseOpen] = useState(false);
   const [newNombre, setNewNombre] = useState('');
+  const [nuevoCodigo, setNuevoCodigo] = useState('');
   const [codigo, setCodigo] = useState('');
 
   return (
@@ -191,13 +193,26 @@ export default function Dashboard() {
 
       <Dialog
         open={crearOpen}
-        onClose={() => setCrearOpen(false)}
+        onClose={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }}
         maxWidth="sm"
         fullWidth
         slotProps={{ paper: { sx: { bgcolor: '#12122a' } } }}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Crear Quiniela</DialogTitle>
-        <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); crearQuiniela.mutate({ nombre: newNombre, codigoInvitacion: '' }, { onSuccess: () => { setCrearOpen(false); setNewNombre(''); } }); }}>
+        <Box component="form" onSubmit={(e: React.FormEvent) => {
+          e.preventDefault();
+          crearQuiniela.mutate(
+            { nombre: newNombre, codigoInvitacion: nuevoCodigo },
+            {
+              onSuccess: (data) => {
+                setCrearOpen(false);
+                setNewNombre('');
+                setNuevoCodigo('');
+                navigate(`/quiniela/${data.id}`);
+              },
+            },
+          );
+        }}>
           <DialogContent>
             {crearQuiniela.isError && (
               <Alert severity="error" sx={{ mb: 2 }}>{getErrorMessage(crearQuiniela.error)}</Alert>
@@ -210,11 +225,21 @@ export default function Dashboard() {
               onChange={(e) => setNewNombre(e.target.value)}
               required
               autoFocus
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Código de invitación"
+              placeholder="Ej: MUNDIAL2026"
+              helperText="Comparte este código con otros participantes"
+              value={nuevoCodigo}
+              onChange={(e) => setNuevoCodigo(e.target.value)}
+              required
             />
           </DialogContent>
           <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button onClick={() => setCrearOpen(false)} sx={{ color: 'text.secondary' }}>Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={!newNombre || crearQuiniela.isPending}>
+            <Button onClick={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} sx={{ color: 'text.secondary' }}>Cancelar</Button>
+            <Button type="submit" variant="contained" disabled={!newNombre || !nuevoCodigo || crearQuiniela.isPending}>
               {crearQuiniela.isPending ? 'Creando...' : 'Crear'}
             </Button>
           </DialogActions>

@@ -29,7 +29,12 @@ export function useCrearQuiniela() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CrearQuinielaRequest) => QuinielasService.crearQuiniela(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['quinielas'] }),
+    onSuccess: (data) => {
+      qc.setQueryData(['quinielas'], (old: unknown) => {
+        if (!Array.isArray(old)) return [data];
+        return [...old, { id: data.id, nombre: data.nombre, codigoInvitacion: data.codigoInvitacion, puntosTotales: 0 }];
+      });
+    },
   });
 }
 

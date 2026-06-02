@@ -9,6 +9,7 @@ import Register from '@/pages/Register';
 import VerifyOtp from '@/pages/VerifyOtp';
 import Dashboard from '@/pages/Dashboard';
 import QuinielaDetail from '@/pages/QuinielaDetail';
+import Ranking from '@/pages/Ranking';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -57,6 +58,7 @@ export default function AppRouter() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="quiniela/:id" element={<QuinielaDetail />} />
+          <Route path="quiniela/:id/ranking" element={<Ranking />} />
           <Route path="grupos" element={<Typography variant="h4" sx={{ fontWeight: 700 }}>Grupos FIFA</Typography>} />
           <Route path="resultados" element={<Typography variant="h4" sx={{ fontWeight: 700 }}>Resultados</Typography>} />
         </Route>

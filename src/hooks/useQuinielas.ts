@@ -46,10 +46,21 @@ export function useUnirseQuiniela() {
   });
 }
 
+export function useMisPronosticos(quinielaId: number) {
+  return useQuery({
+    queryKey: ['pronosticos', quinielaId],
+    queryFn: () => PronSticosService.getMisPronosticos(quinielaId),
+    enabled: !!quinielaId,
+  });
+}
+
 export function useGuardarPronosticos() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CrearPronosticosBatchRequest) => PronSticosService.guardarPronosticosBatch(data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['quiniela', vars.idQuiniela] }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['pronosticos', vars.idQuiniela] });
+      qc.invalidateQueries({ queryKey: ['quiniela', vars.idQuiniela] });
+    },
   });
 }

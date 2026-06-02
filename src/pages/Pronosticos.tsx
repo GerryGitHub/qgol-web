@@ -5,17 +5,20 @@ import {
   Box,
   Typography,
   Button,
-  CircularProgress,
   Alert,
   TextField,
   IconButton,
   Chip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useQuinielaDetalle, useMisPronosticos, useGuardarPronosticos } from '@/hooks/useQuinielas';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import { ApiError } from '@/api/generated';
 import type { CrearPronosticosBatchRequest, PronosticoItemRequest } from '@/types';
+import FlagIcon from '@/components/ui/FlagIcon';
+import LoadingScreen from '@/components/ui/LoadingScreen';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface FormValues {
   pronosticos: PronosticoItemRequest[];
@@ -37,6 +40,13 @@ const estadoLabel: Record<string, string> = {
   POR_COMENZAR: 'Próximo',
   EN_CURSO: 'En vivo',
   FINALIZADO: 'Finalizado',
+};
+
+const estadoColor: Record<string, 'default' | 'primary' | 'success' | 'error'> = {
+  PENDIENTE: 'default',
+  POR_COMENZAR: 'primary',
+  EN_CURSO: 'success',
+  FINALIZADO: 'error',
 };
 
 export default function Pronosticos() {
@@ -101,13 +111,7 @@ export default function Pronosticos() {
 
   const isLoading = loadingQuiniela || loadingPronosticos;
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (!quiniela) {
     return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar la quiniela</Alert>;
@@ -120,10 +124,11 @@ export default function Pronosticos() {
           <IconButton onClick={() => navigate(-1)} sx={{ color: '#94A3B8' }}><ArrowBackIcon /></IconButton>
           <Typography variant="h2" sx={{ color: '#fff' }}>Pronósticos</Typography>
         </Box>
-        <Box sx={{ textAlign: 'center', py: 6, bgcolor: '#334155', borderRadius: 4, p: 4 }}>
-          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 600 }}>No hay partidos disponibles</Typography>
-          <Typography variant="body2" sx={{ color: '#94A3B8', mt: 1 }}>Todos los partidos han finalizado.</Typography>
-        </Box>
+        <EmptyState
+          icon={<SportsSoccerIcon />}
+          title="No hay partidos disponibles"
+          description="Todos los partidos de esta quiniela han finalizado"
+        />
       </Box>
     );
   }
@@ -152,12 +157,21 @@ export default function Pronosticos() {
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
                     {formatFecha(partido.fechaHora)}
                   </Typography>
-                  <Chip label={estadoLabel[partido.estado] || partido.estado} color="primary" size="small" variant="outlined" sx={{ borderRadius: 2, fontSize: '0.65rem' }} />
+                  <Chip
+                    label={estadoLabel[partido.estado] || partido.estado}
+                    color={estadoColor[partido.estado] || 'default'}
+                    size="small"
+                    variant="outlined"
+                    sx={{ borderRadius: 2, fontSize: '0.65rem' }}
+                  />
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ flex: 1, textAlign: 'right' }}>
-                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{partido.equipoLocal}</Typography>
+                    <FlagIcon country={partido.equipoLocal} size={18} />
+                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', mt: 0.25 }}>
+                      {partido.equipoLocal}
+                    </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -174,7 +188,7 @@ export default function Pronosticos() {
                       disabled={guardarPronosticos.isPending}
                       {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })}
                     />
-                    <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.85rem' }}>vs</Typography>
+                    <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.8rem' }}>:</Typography>
                     <TextField
                       type="number"
                       slotProps={{
@@ -191,7 +205,10 @@ export default function Pronosticos() {
                   </Box>
 
                   <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{partido.equipoVisitante}</Typography>
+                    <FlagIcon country={partido.equipoVisitante} size={18} />
+                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', mt: 0.25 }}>
+                      {partido.equipoVisitante}
+                    </Typography>
                   </Box>
                 </Box>
               </Box>
@@ -199,8 +216,8 @@ export default function Pronosticos() {
           })}
         </Box>
 
-        <Box sx={{ position: 'fixed', bottom: 72, left: 0, right: 0, p: 2, bgcolor: '#0F172A', borderTop: '1px solid #334155' }}>
-          <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+        <Box sx={{ position: 'fixed', bottom: { xs: 72, md: 0 }, left: { md: 250 }, right: 0, p: 2, bgcolor: '#0F172A', borderTop: '1px solid #334155' }}>
+          <Box sx={{ maxWidth: { md: 1400 }, mx: 'auto', px: { md: 4 } }}>
             <Button
               type="submit"
               variant="contained"

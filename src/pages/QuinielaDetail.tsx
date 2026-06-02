@@ -2,13 +2,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  CircularProgress,
-  Alert,
   Button,
+  Alert,
 } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useQuinielaDetalle } from '@/hooks/useQuinielas';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export default function QuinielaDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,13 +16,7 @@ export default function QuinielaDetail() {
   const navigate = useNavigate();
   const { data: quiniela, isLoading, isError } = useQuinielaDetalle(quinielaId);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (isError || !quiniela) {
     return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar la quiniela</Alert>;
@@ -95,22 +89,10 @@ export default function QuinielaDetail() {
       </Box>
 
       <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<EmojiEventsIcon />}
-          onClick={() => navigate(`/quiniela/${quinielaId}/ranking`)}
-          sx={{ py: 1.5 }}
-        >
+        <Button variant="contained" fullWidth startIcon={<EmojiEventsIcon />} onClick={() => navigate(`/quiniela/${quinielaId}/ranking`)} sx={{ py: 1.5 }}>
           Ver Ranking
         </Button>
-        <Button
-          variant="outlined"
-          fullWidth
-          startIcon={<SportsSoccerIcon />}
-          onClick={() => navigate(`/quiniela/${quinielaId}/pronosticos`)}
-          sx={{ py: 1.5 }}
-        >
+        <Button variant="outlined" fullWidth startIcon={<SportsSoccerIcon />} onClick={() => navigate(`/quiniela/${quinielaId}/pronosticos`)} sx={{ py: 1.5 }}>
           Pronosticar
         </Button>
       </Box>

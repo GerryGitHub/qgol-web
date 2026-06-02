@@ -23,15 +23,9 @@ const theme = createTheme({
       light: '#60A5FA',
       dark: '#2563EB',
     },
-    success: {
-      main: '#22C55E',
-    },
-    warning: {
-      main: '#F59E0B',
-    },
-    error: {
-      main: '#EF4444',
-    },
+    success: { main: '#22C55E' },
+    warning: { main: '#F59E0B' },
+    error: { main: '#EF4444' },
     background: {
       default: '#0F172A',
       paper: '#1E293B',
@@ -57,9 +51,7 @@ const theme = createTheme({
     body2: { fontSize: '0.875rem', lineHeight: 1.5 },
     caption: { fontSize: '0.75rem', lineHeight: 1.4 },
   },
-  shape: {
-    borderRadius: 16,
-  },
+  shape: { borderRadius: 16 },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -87,6 +79,13 @@ const theme = createTheme({
           backgroundColor: '#334155',
           borderRadius: 16,
           boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },
@@ -127,6 +126,35 @@ const theme = createTheme({
         },
       },
     },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#1E293B',
+          borderRight: '1px solid #334155',
+        },
+      },
+    },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          padding: 0,
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          margin: '2px 8px',
+          padding: '10px 16px',
+          '&:hover': { backgroundColor: 'rgba(34, 197, 94, 0.08)' },
+          '&.Mui-selected': {
+            backgroundColor: 'rgba(34, 197, 94, 0.12)',
+            '&:hover': { backgroundColor: 'rgba(34, 197, 94, 0.16)' },
+          },
+        },
+      },
+    },
     MuiTabs: {
       styleOverrides: {
         root: {
@@ -151,13 +179,8 @@ const theme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
-        root: {
-          borderRadius: 8,
-          fontWeight: 600,
-        },
-        outlined: {
-          borderColor: '#334155',
-        },
+        root: { borderRadius: 8, fontWeight: 600 },
+        outlined: { borderColor: '#334155' },
       },
     },
     MuiDialog: {
@@ -171,9 +194,12 @@ const theme = createTheme({
     },
     MuiAvatar: {
       styleOverrides: {
-        root: {
-          fontWeight: 700,
-        },
+        root: { fontWeight: 700 },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: { borderColor: '#334155' },
       },
     },
     MuiCssBaseline: {

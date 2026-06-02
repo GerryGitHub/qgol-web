@@ -2,7 +2,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  CircularProgress,
   Alert,
   Avatar,
   IconButton,
@@ -13,6 +12,8 @@ import StarsIcon from '@mui/icons-material/Stars';
 import { useLeaderboard, useQuinielaDetalle } from '@/hooks/useQuinielas';
 import { useAuthStore } from '@/store/authStore';
 import type { LeaderboardEntryDTO } from '@/api/generated';
+import LoadingScreen from '@/components/ui/LoadingScreen';
+import EmptyState from '@/components/ui/EmptyState';
 
 const medalColors = ['#F59E0B', '#94A3B8', '#CD7F32'];
 
@@ -76,13 +77,7 @@ export default function Ranking() {
   const { data: quiniela } = useQuinielaDetalle(quinielaId);
   const currentUser = useAuthStore((s) => s.usuario);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (isError || !leaderboard) {
     return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar el ranking</Alert>;
@@ -105,11 +100,11 @@ export default function Ranking() {
       </Box>
 
       {entries.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
-          <EmojiEventsIcon sx={{ fontSize: 48, color: '#64748B', opacity: 0.4, mb: 1 }} />
-          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 600 }}>Sin participantes</Typography>
-          <Typography variant="body2" sx={{ color: '#94A3B8' }}>Comparte el código de invitación.</Typography>
-        </Box>
+        <EmptyState
+          icon={<EmojiEventsIcon />}
+          title="Sin participantes"
+          description="Comparte el código de invitación para que se unan"
+        />
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {entries.map((entry) => (

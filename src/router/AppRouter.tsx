@@ -3,7 +3,7 @@ import { CircularProgress, Box } from '@mui/material';
 import { useAuthStore } from '@/store/authStore';
 import { SnackbarProvider } from '@/components/SnackbarProvider';
 import PublicLayout from '@/layouts/PublicLayout';
-import MainLayout from '@/layouts/MainLayout';
+import AppLayout from '@/layouts/AppLayout';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import VerifyOtp from '@/pages/VerifyOtp';
@@ -58,7 +58,7 @@ export default function AppRouter() {
           <Route path="/verify-otp" element={<PublicRoute><VerifyOtp /></PublicRoute>} />
         </Route>
 
-        <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pronosticos" element={<PronosticosList />} />

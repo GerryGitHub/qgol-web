@@ -4,12 +4,16 @@ import {
   Typography,
   Tabs,
   Tab,
-  CircularProgress,
   Alert,
   Paper,
 } from '@mui/material';
+import GroupsIcon from '@mui/icons-material/Groups';
 import { useGrupos } from '@/hooks/useGrupos';
 import type { SeleccionDTO } from '@/api/generated';
+import FlagIcon from '@/components/ui/FlagIcon';
+import SectionHeader from '@/components/ui/SectionHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 function sortSelecciones(list: SeleccionDTO[]): SeleccionDTO[] {
   return [...list].sort((a, b) => {
@@ -53,7 +57,8 @@ function GroupTable({ selecciones }: { selecciones: SeleccionDTO[] }) {
 
       {sorted.map((s, i) => {
         const borderClr = i < sorted.length - 1 ? '#334155' : 'transparent';
-        const bgColor = i < 4 ? 'rgba(34, 197, 94, 0.04)' : 'transparent';
+        const qualifies = i < 4;
+        const bgColor = qualifies ? 'rgba(34, 197, 94, 0.04)' : 'transparent';
         return (
           <Box
             key={s.id}
@@ -65,16 +70,34 @@ function GroupTable({ selecciones }: { selecciones: SeleccionDTO[] }) {
               borderBottom: '1px solid',
               borderColor: borderClr,
               bgcolor: bgColor,
+              position: 'relative',
               '&:hover': { bgcolor: 'rgba(34, 197, 94, 0.07)' },
             }}
           >
-            <Typography sx={{ textAlign: 'center', alignSelf: 'center', color: '#94A3B8', fontWeight: 600, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+            {qualifies && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 3,
+                  bgcolor: '#22C55E',
+                  borderTopLeftRadius: i === 0 ? 3 : 0,
+                  borderBottomLeftRadius: i === sorted.length - 1 || i === 3 ? 3 : 0,
+                }}
+              />
+            )}
+            <Typography sx={{ textAlign: 'center', alignSelf: 'center', color: '#94A3B8', fontWeight: qualifies ? 700 : 500, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
               {i + 1}
             </Typography>
 
-            <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' }, alignSelf: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {s.nombre}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, alignSelf: 'center', minWidth: 0 }}>
+              <FlagIcon country={s.nombre} size={16} />
+              <Typography sx={{ fontWeight: qualifies ? 700 : 500, color: '#fff', fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' }, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {s.nombre}
+              </Typography>
+            </Box>
 
             {[s.partidosJugados, s.partidosGanados, s.partidosEmpatados, s.partidosPerdidos, s.golesAFavor, s.golesEnContra].map((v) => (
               <Typography key={v} sx={{ textAlign: 'center', alignSelf: 'center', color: '#94A3B8', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
@@ -105,13 +128,7 @@ export default function Grupos() {
     return [...data.grupos].sort((a, b) => a.nombre.localeCompare(b.nombre));
   }, [data]);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (isError || !data) {
     return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar los grupos</Alert>;
@@ -119,21 +136,20 @@ export default function Grupos() {
 
   if (grupos.length === 0) {
     return (
-      <Box sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h2" sx={{ color: '#fff', mb: 1 }}>Grupos FIFA</Typography>
-        <Typography variant="body2" sx={{ color: '#94A3B8' }}>No hay grupos disponibles</Typography>
+      <Box>
+        <SectionHeader title="Grupos FIFA" subtitle="Mundial 2026" />
+        <EmptyState
+          icon={<GroupsIcon />}
+          title="No hay grupos disponibles"
+          description="Los grupos se publicarán próximamente"
+        />
       </Box>
     );
   }
 
   return (
     <Box>
-      <Typography variant="h1" sx={{ color: '#fff', mb: 0.5 }}>
-        Grupos FIFA
-      </Typography>
-      <Typography variant="body2" sx={{ color: '#94A3B8', mb: 3 }}>
-        Tabla de posiciones – Mundial 2026
-      </Typography>
+      <SectionHeader title="Grupos FIFA" subtitle="Mundial 2026 — Tabla de posiciones" />
 
       <Paper sx={{ bgcolor: 'transparent', backgroundImage: 'none', mb: 2 }}>
         <Tabs

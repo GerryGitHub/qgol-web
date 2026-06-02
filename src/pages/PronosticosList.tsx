@@ -2,12 +2,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  CircularProgress,
   Alert,
 } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useQuinielas } from '@/hooks/useQuinielas';
+import SectionHeader from '@/components/ui/SectionHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export default function PronosticosList() {
   const navigate = useNavigate();
@@ -15,29 +17,24 @@ export default function PronosticosList() {
 
   return (
     <Box>
-      <Typography variant="h1" sx={{ color: '#fff', mb: 0.5 }}>
-        Pronósticos
-      </Typography>
-      <Typography variant="body2" sx={{ color: '#94A3B8', mb: 3 }}>
-        Selecciona una quiniela para hacer tus pronósticos
-      </Typography>
+      <SectionHeader
+        title="Pronósticos"
+        subtitle="Selecciona una quiniela para hacer tus pronósticos"
+      />
 
-      {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-          <CircularProgress />
-        </Box>
-      )}
+      {isLoading && <LoadingScreen />}
 
       {isError && (
         <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar las quinielas</Alert>
       )}
 
       {quinielas && quinielas.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 6, bgcolor: '#334155', borderRadius: 4, p: 4 }}>
-          <SportsSoccerIcon sx={{ fontSize: 48, color: '#64748B', opacity: 0.4, mb: 1 }} />
-          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 600 }}>Sin quinielas</Typography>
-          <Typography variant="body2" sx={{ color: '#94A3B8', mt: 1 }}>Crea o únete a una quiniela primero.</Typography>
-        </Box>
+        <EmptyState
+          icon={<SportsSoccerIcon />}
+          title="Sin quinielas disponibles"
+          description="Crea o únete a una quiniela para empezar a pronosticar"
+          action={{ label: 'Ir a Quinielas', onClick: () => navigate('/dashboard') }}
+        />
       )}
 
       {quinielas && quinielas.length > 0 && (

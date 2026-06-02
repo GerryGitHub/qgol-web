@@ -14,7 +14,9 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useAuthStore } from '@/store/authStore';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -30,17 +32,15 @@ export default function Perfil() {
 
   return (
     <Box>
-      <Typography variant="h1" sx={{ color: '#fff', mb: 3 }}>
-        Perfil
-      </Typography>
+      <SectionHeader title="Perfil" />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
         <Avatar
           sx={{
-            width: 80,
-            height: 80,
+            width: 88,
+            height: 88,
             bgcolor: '#3B82F6',
-            fontSize: '1.75rem',
+            fontSize: '2rem',
             fontWeight: 800,
             mb: 2,
             boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
@@ -48,7 +48,7 @@ export default function Perfil() {
         >
           {usuario.nombre.charAt(0).toUpperCase()}
         </Avatar>
-        <Typography variant="h3" sx={{ color: '#fff', fontWeight: 700 }}>
+        <Typography variant="h4" sx={{ color: '#fff', fontWeight: 700 }}>
           {usuario.nombre}
         </Typography>
         <Typography variant="body2" sx={{ color: '#94A3B8' }}>
@@ -58,32 +58,36 @@ export default function Perfil() {
 
       <Box sx={{ bgcolor: '#334155', borderRadius: 4, overflow: 'hidden' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2.5 }}>
-          <PersonIcon sx={{ color: '#22C55E', fontSize: 24 }} />
+          <Box sx={{ bgcolor: 'rgba(34, 197, 94, 0.15)', borderRadius: 2, p: 1, display: 'flex' }}>
+            <PersonIcon sx={{ color: '#22C55E', fontSize: 22 }} />
+          </Box>
           <Box>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.6rem' }}>
               Usuario
             </Typography>
-            <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+            <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '0.95rem' }}>
               {usuario.nombre}
             </Typography>
           </Box>
         </Box>
         <Divider sx={{ borderColor: '#475569' }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2.5 }}>
-          <EmailIcon sx={{ color: '#22C55E', fontSize: 24 }} />
+          <Box sx={{ bgcolor: 'rgba(34, 197, 94, 0.15)', borderRadius: 2, p: 1, display: 'flex' }}>
+            <EmailIcon sx={{ color: '#22C55E', fontSize: 22 }} />
+          </Box>
           <Box>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.6rem' }}>
               Email
             </Typography>
-            <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+            <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '0.95rem' }}>
               {usuario.email}
             </Typography>
           </Box>
         </Box>
         <Divider sx={{ borderColor: '#475569' }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2.5 }}>
-          <Box sx={{ color: '#22C55E', fontSize: 24, fontWeight: 800, width: 24, textAlign: 'center' }}>
-            #
+          <Box sx={{ bgcolor: 'rgba(34, 197, 94, 0.15)', borderRadius: 2, p: 1, display: 'flex' }}>
+            <EmojiEventsIcon sx={{ color: '#22C55E', fontSize: 22 }} />
           </Box>
           <Box>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.6rem' }}>

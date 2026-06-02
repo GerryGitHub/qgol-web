@@ -10,16 +10,19 @@ import {
   DialogActions,
   TextField,
   Alert,
-  CircularProgress,
   Fab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useQuinielas, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
 import type { QuinielaResumenDTO } from '@/types';
 import { ApiError } from '@/api/generated';
 import { useSnackbarStore } from '@/store/snackbarStore';
+import SectionHeader from '@/components/ui/SectionHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.body?.message) return error.body.message;
@@ -39,10 +42,7 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
         p: 2.5,
         cursor: 'pointer',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-        },
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 6px 20px rgba(0,0,0,0.3)' },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
@@ -51,7 +51,6 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
         </Typography>
         <ChevronRightIcon sx={{ color: '#64748B', fontSize: 24, flexShrink: 0 }} />
       </Box>
-
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="body2" sx={{ color: '#94A3B8', fontFamily: 'monospace', fontSize: '0.8rem' }}>
           {quiniela.codigoInvitacion}
@@ -78,20 +77,22 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ pb: 8 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h1" sx={{ color: '#fff', mb: 0.5 }}>
-          Mis Quinielas
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#94A3B8' }}>
-          {quinielas ? `${quinielas.length} quiniela${quinielas.length !== 1 ? 's' : ''}` : 'Cargando...'}
-        </Typography>
-      </Box>
+      <SectionHeader
+        title="Mis Quinielas"
+        subtitle={quinielas ? `${quinielas.length} quiniela${quinielas.length !== 1 ? 's' : ''}` : undefined}
+        action={
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outlined" startIcon={<ContentPasteIcon />} onClick={() => setUnirseOpen(true)}>
+              Unirse
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCrearOpen(true)}>
+              Crear
+            </Button>
+          </Box>
+        }
+      />
 
-      {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-          <CircularProgress />
-        </Box>
-      )}
+      {isLoading && <LoadingScreen />}
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
@@ -100,22 +101,12 @@ export default function Dashboard() {
       )}
 
       {quinielas && quinielas.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>
-            No tienes quinielas
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#94A3B8', mb: 3 }}>
-            Crea una nueva o únete a una existente.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button variant="outlined" startIcon={<ContentPasteIcon />} onClick={() => setUnirseOpen(true)}>
-              Unirse
-            </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCrearOpen(true)}>
-              Crear Quiniela
-            </Button>
-          </Box>
-        </Box>
+        <EmptyState
+          icon={<EmojiEventsIcon />}
+          title="Crea tu primera quiniela"
+          description="Invita amigos y compite durante el Mundial 2026"
+          action={{ label: 'Crear Quiniela', onClick: () => setCrearOpen(true) }}
+        />
       )}
 
       {quinielas && quinielas.length > 0 && (
@@ -131,8 +122,8 @@ export default function Dashboard() {
         onClick={() => setCrearOpen(true)}
         sx={{
           position: 'fixed',
-          bottom: 88,
-          right: 20,
+          bottom: { xs: 88, md: 24 },
+          right: 24,
           width: 56,
           height: 56,
           boxShadow: '0 4px 14px rgba(34, 197, 94, 0.35)',

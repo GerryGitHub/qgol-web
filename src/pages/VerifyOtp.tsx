@@ -2,12 +2,11 @@ import { useState, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Alert,
   Button,
 } from '@mui/material';
+import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useVerifyOtp, useResendOtp } from '@/hooks/useAuth';
 
 export default function VerifyOtp() {
@@ -49,25 +48,28 @@ export default function VerifyOtp() {
   };
 
   return (
-    <Card sx={{ width: '100%', maxWidth: 420 }}>
-      <CardContent sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, textAlign: 'center', mb: 1 }}>
+    <Box sx={{ width: '100%', maxWidth: 400 }}>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <SportsSoccerIcon sx={{ fontSize: 48, color: '#22C55E', mb: 1 }} />
+        <Typography variant="h3" sx={{ fontWeight: 900, color: '#fff' }}>
           Verifica tu cuenta
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', mb: 3 }}>
-          Ingresa el código de 6 dígitos enviado a{' '}
-          <Typography component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ color: '#94A3B8', mt: 0.5 }}>
+          Código enviado a{' '}
+          <Typography component="span" sx={{ color: '#fff', fontWeight: 600 }}>
             {email}
           </Typography>
         </Typography>
+      </Box>
 
+      <Box sx={{ bgcolor: '#1E293B', borderRadius: 4, p: 3 }}>
         {verifyOtp.isError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
             {verifyOtp.error instanceof Error ? verifyOtp.error.message : 'Código inválido'}
           </Alert>
         )}
         {verifyOtp.isSuccess && (
-          <Alert severity="success" sx={{ mb: 2 }}>
+          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
             ¡Cuenta verificada! Ahora puedes iniciar sesión.
           </Alert>
         )}
@@ -87,14 +89,14 @@ export default function VerifyOtp() {
                 textAlign: 'center',
                 fontSize: '1.5rem',
                 fontWeight: 700,
-                bgcolor: '#0f0f25',
+                bgcolor: '#0F172A',
                 border: '2px solid',
-                borderColor: digit ? 'primary.main' : '#1e293b',
+                borderColor: digit ? '#22C55E' : '#334155',
                 borderRadius: 2,
-                color: 'text.primary',
+                color: '#fff',
                 outline: 'none',
-                caretColor: 'primary.main',
-                '&:focus': { borderColor: 'primary.main' },
+                caretColor: '#22C55E',
+                '&:focus': { borderColor: '#22C55E' },
               }}
             />
           ))}
@@ -116,11 +118,11 @@ export default function VerifyOtp() {
           fullWidth
           disabled={resendOtp.isPending}
           onClick={() => resendOtp.mutate({ email })}
-          sx={{ color: 'text.secondary' }}
+          sx={{ color: '#94A3B8' }}
         >
           {resendOtp.isPending ? 'Enviando...' : 'Reenviar código'}
         </Button>
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 }

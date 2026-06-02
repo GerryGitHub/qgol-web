@@ -4,8 +4,6 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Button,
   CircularProgress,
   Alert,
@@ -39,13 +37,6 @@ const estadoLabel: Record<string, string> = {
   POR_COMENZAR: 'Próximo',
   EN_CURSO: 'En vivo',
   FINALIZADO: 'Finalizado',
-};
-
-const estadoColor: Record<string, 'default' | 'primary' | 'success' | 'error' | 'warning'> = {
-  PENDIENTE: 'default',
-  POR_COMENZAR: 'primary',
-  EN_CURSO: 'success',
-  FINALIZADO: 'error',
 };
 
 export default function Pronosticos() {
@@ -87,14 +78,7 @@ export default function Pronosticos() {
     }),
   }), [partidos, pronosticoMap]);
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    reset,
-    formState: { isDirty },
-  } = useForm<FormValues>({ defaultValues });
-
+  const { control, register, handleSubmit, reset, formState: { isDirty } } = useForm<FormValues>({ defaultValues });
   const { fields } = useFieldArray({ control, name: 'pronosticos' });
 
   useEffect(() => {
@@ -111,9 +95,7 @@ export default function Pronosticos() {
       })),
     };
     guardarPronosticos.mutate(payload, {
-      onSuccess: () => {
-        showSnackbar('Pronósticos guardados', 'success');
-      },
+      onSuccess: () => showSnackbar('Pronósticos guardados', 'success'),
     });
   };
 
@@ -128,46 +110,36 @@ export default function Pronosticos() {
   }
 
   if (!quiniela) {
-    return <Alert severity="error">Error al cargar la quiniela</Alert>;
+    return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar la quiniela</Alert>;
   }
 
   if (partidos.length === 0) {
     return (
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-          <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>Pronósticos</Typography>
+          <IconButton onClick={() => navigate(-1)} sx={{ color: '#94A3B8' }}><ArrowBackIcon /></IconButton>
+          <Typography variant="h2" sx={{ color: '#fff' }}>Pronósticos</Typography>
         </Box>
-        <Card sx={{ textAlign: 'center', py: 4 }}>
-          <CardContent>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>No hay partidos disponibles</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Todos los partidos han finalizado.
-            </Typography>
-          </CardContent>
-        </Card>
+        <Box sx={{ textAlign: 'center', py: 6, bgcolor: '#334155', borderRadius: 4, p: 4 }}>
+          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 600 }}>No hay partidos disponibles</Typography>
+          <Typography variant="body2" sx={{ color: '#94A3B8', mt: 1 }}>Todos los partidos han finalizado.</Typography>
+        </Box>
       </Box>
     );
   }
 
   return (
-    <Box>
+    <Box sx={{ pb: 20 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
-          <ArrowBackIcon />
-        </IconButton>
+        <IconButton onClick={() => navigate(-1)} sx={{ color: '#94A3B8' }}><ArrowBackIcon /></IconButton>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>Pronósticos</Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {quiniela.nombre}
-          </Typography>
+          <Typography variant="h2" sx={{ color: '#fff' }}>Pronósticos</Typography>
+          <Typography variant="body2" sx={{ color: '#94A3B8' }}>{quiniela.nombre}</Typography>
         </Box>
       </Box>
 
       {guardarPronosticos.isError && (
-        <Alert severity="error" sx={{ mb: 2 }}>{getErrorMessage(guardarPronosticos.error)}</Alert>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(guardarPronosticos.error)}</Alert>
       )}
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)}>
@@ -175,83 +147,72 @@ export default function Pronosticos() {
           {fields.map((field, index) => {
             const partido = partidos[index];
             return (
-              <Card key={field.id} sx={{ '&:hover': { borderColor: 'primary.main' } }}>
-                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {formatFecha(partido.fechaHora)}
-                    </Typography>
-                    <Chip
-                      label={estadoLabel[partido.estado] || partido.estado}
-                      color={estadoColor[partido.estado] || 'default'}
-                      size="small"
+              <Box key={field.id} sx={{ bgcolor: '#334155', borderRadius: 4, p: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+                    {formatFecha(partido.fechaHora)}
+                  </Typography>
+                  <Chip label={estadoLabel[partido.estado] || partido.estado} color="primary" size="small" variant="outlined" sx={{ borderRadius: 2, fontSize: '0.65rem' }} />
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ flex: 1, textAlign: 'right' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{partido.equipoLocal}</Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TextField
+                      type="number"
+                      slotProps={{
+                        htmlInput: {
+                          min: 0, max: 99,
+                          sx: { textAlign: 'center', width: 48, p: '10px 6px', fontWeight: 800, fontSize: '1.25rem' },
+                        },
+                      }}
                       variant="outlined"
+                      size="small"
+                      disabled={guardarPronosticos.isPending}
+                      {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })}
+                    />
+                    <Typography sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.85rem' }}>vs</Typography>
+                    <TextField
+                      type="number"
+                      slotProps={{
+                        htmlInput: {
+                          min: 0, max: 99,
+                          sx: { textAlign: 'center', width: 48, p: '10px 6px', fontWeight: 800, fontSize: '1.25rem' },
+                        },
+                      }}
+                      variant="outlined"
+                      size="small"
+                      disabled={guardarPronosticos.isPending}
+                      {...register(`pronosticos.${index}.golesVisitantePredicho`, { valueAsNumber: true, min: 0 })}
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ flex: 1, textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{partido.equipoLocal}</Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <TextField
-                        type="number"
-                        slotProps={{
-                          htmlInput: {
-                            min: 0,
-                            max: 99,
-                            sx: { textAlign: 'center', width: 40, p: '6px 4px', fontWeight: 700, fontSize: '1rem' },
-                          },
-                        }}
-                        variant="outlined"
-                        size="small"
-                        disabled={guardarPronosticos.isPending}
-                        {...register(`pronosticos.${index}.golesLocalPredicho`, {
-                          valueAsNumber: true,
-                          min: 0,
-                        })}
-                      />
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>vs</Typography>
-                      <TextField
-                        type="number"
-                        slotProps={{
-                          htmlInput: {
-                            min: 0,
-                            max: 99,
-                            sx: { textAlign: 'center', width: 40, p: '6px 4px', fontWeight: 700, fontSize: '1rem' },
-                          },
-                        }}
-                        variant="outlined"
-                        size="small"
-                        disabled={guardarPronosticos.isPending}
-                        {...register(`pronosticos.${index}.golesVisitantePredicho`, {
-                          valueAsNumber: true,
-                          min: 0,
-                        })}
-                      />
-                    </Box>
-
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{partido.equipoVisitante}</Typography>
-                    </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{partido.equipoVisitante}</Typography>
                   </Box>
-                </CardContent>
-              </Card>
+                </Box>
+              </Box>
             );
           })}
         </Box>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          size="large"
-          disabled={!isDirty || guardarPronosticos.isPending}
-          sx={{ py: 1.5, fontWeight: 700 }}
-        >
-          {guardarPronosticos.isPending ? 'Guardando...' : 'Guardar Pronósticos'}
-        </Button>
+        <Box sx={{ position: 'fixed', bottom: 72, left: 0, right: 0, p: 2, bgcolor: '#0F172A', borderTop: '1px solid #334155' }}>
+          <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              size="large"
+              disabled={!isDirty || guardarPronosticos.isPending}
+              sx={{ py: 1.5, fontWeight: 700, fontSize: '1rem' }}
+            >
+              {guardarPronosticos.isPending ? 'Guardando...' : 'Guardar Pronósticos'}
+            </Button>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

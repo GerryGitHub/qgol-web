@@ -1,186 +1,117 @@
-import { useState } from 'react';
-import { Outlet, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
-  IconButton,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+  BottomNavigation,
+  BottomNavigationAction,
   Avatar,
-  Menu,
-  MenuItem,
-  Divider,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import HomeIcon from '@mui/icons-material/Home';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
-import LogoutIcon from '@mui/icons-material/Logout';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PersonIcon from '@mui/icons-material/Person';
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
-  { label: 'Mis Quinielas', path: '/dashboard', icon: <HomeIcon /> },
-  { label: 'Grupos FIFA', path: '/grupos', icon: <EmojiEventsIcon /> },
-  { label: 'Resultados', path: '/resultados', icon: <SportsSoccerIcon /> },
+  { label: 'Quinielas', path: '/dashboard', icon: <EmojiEventsIcon /> },
+  { label: 'Pronósticos', path: '/pronosticos', icon: <SportsSoccerIcon /> },
+  { label: 'Grupos', path: '/grupos', icon: <GroupsIcon /> },
+  { label: 'Perfil', path: '/perfil', icon: <PersonIcon /> },
 ];
 
+const hideNavPaths = new Set(['/login', '/register', '/verify-otp']);
+
 export default function MainLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const navigate = useNavigate();
-  const { usuario, logout } = useAuthStore();
+  const { usuario } = useAuthStore();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const currentTab = navItems.findIndex((item) => {
+    if (item.path === '/dashboard') return location.pathname === '/dashboard';
+    return location.pathname.startsWith(item.path);
+  });
+
+  const showNav = !hideNavPaths.has(location.pathname);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar
-        position="sticky"
-        elevation={0}
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: showNav ? '72px' : 0 }}>
+      <Box
         sx={{
-          bgcolor: 'rgba(10, 10, 26, 0.85)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1100,
+          bgcolor: 'rgba(15, 23, 42, 0.92)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid',
           borderColor: 'divider',
+          px: { xs: 2, md: 3 },
+          py: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        <Toolbar>
-          {isMobile && (
-            <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 1 }}>
-              <MenuIcon />
-            </IconButton>
-          )}
-          <Typography
-            variant="h6"
-            component={RouterLink}
-            to="/dashboard"
-            sx={{
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #6366f1, #f43f5e)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textDecoration: 'none',
-            }}
-          >
-            QGol
-          </Typography>
+        <Typography
+          component={RouterLink}
+          to="/dashboard"
+          sx={{
+            fontWeight: 900,
+            fontSize: '1.35rem',
+            color: '#22C55E',
+            textDecoration: 'none',
+            letterSpacing: '-0.5px',
+          }}
+        >
+          QGol
+        </Typography>
 
-          {!isMobile && (
-            <Box sx={{ ml: 4, display: 'flex', gap: 1 }}>
-              {navItems.map((item) => (
-                <Typography
-                  key={item.path}
-                  component={RouterLink}
-                  to={item.path}
-                  sx={{
-                    color: 'text.secondary',
-                    textDecoration: 'none',
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', color: 'text.primary' },
-                  }}
-                >
-                  {item.label}
-                </Typography>
-              ))}
-            </Box>
-          )}
-
-          <Box sx={{ flexGrow: 1 }} />
-
-          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.875rem' }}>
+        {!isMobile && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar
+              onClick={() => navigate('/perfil')}
+              sx={{
+                width: 36,
+                height: 36,
+                fontSize: '0.8rem',
+                bgcolor: '#3B82F6',
+                cursor: 'pointer',
+              }}
+            >
               {usuario?.nombre?.charAt(0).toUpperCase()}
             </Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={!!anchorEl}
-            onClose={() => setAnchorEl(null)}
-            slotProps={{
-              paper: { sx: { bgcolor: '#12122a', border: '1px solid #1e293b', minWidth: 200 } },
-            }}
-          >
-            <MenuItem disabled sx={{ opacity: 1 }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {usuario?.email}
-              </Typography>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
-              Cerrar Sesión
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+          </Box>
+        )}
+      </Box>
 
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        slotProps={{
-          paper: { sx: { bgcolor: '#0a0a1a', width: 280 } },
-        }}
-      >
-        <Box sx={{ p: 3 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #6366f1, #f43f5e)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            QGol
-          </Typography>
-        </Box>
-        <Divider />
-        <List sx={{ px: 1 }}>
-          {navItems.map((item) => (
-            <ListItemButton
-              key={item.path}
-              onClick={() => { navigate(item.path); setDrawerOpen(false); }}
-              sx={{ borderRadius: 2, mb: 0.5 }}
-            >
-              <ListItemIcon sx={{ color: 'text.secondary', minWidth: 40 }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          ))}
-        </List>
-        <Box sx={{ flexGrow: 1 }} />
-        <Divider />
-        <List sx={{ px: 1 }}>
-          <ListItemButton onClick={handleLogout} sx={{ borderRadius: 2 }}>
-            <ListItemIcon sx={{ color: 'text.secondary', minWidth: 40 }}>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Cerrar Sesión" />
-          </ListItemButton>
-        </List>
-      </Drawer>
-
-      <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, md: 3 } }}>
+      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, md: 3 }, pt: 2 }}>
         <Outlet />
       </Box>
+
+      {showNav && (
+        <BottomNavigation
+          value={currentTab >= 0 ? currentTab : 0}
+          onChange={(_, newValue) => navigate(navItems[newValue].path)}
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
+          }}
+        >
+          {navItems.map((item) => (
+            <BottomNavigationAction
+              key={item.path}
+              label={item.label}
+              icon={item.icon}
+            />
+          ))}
+        </BottomNavigation>
+      )}
     </Box>
   );
 }

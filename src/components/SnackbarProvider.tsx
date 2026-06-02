@@ -10,8 +10,9 @@ export function SnackbarProvider() {
       autoHideDuration={4000}
       onClose={hide}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      sx={{ bottom: { xs: 84, md: 16 } }}
     >
-      <Alert onClose={hide} severity={severity} variant="filled" sx={{ width: '100%' }}>
+      <Alert onClose={hide} severity={severity} variant="filled" sx={{ width: '100%', borderRadius: 3 }}>
         {message}
       </Alert>
     </Snackbar>

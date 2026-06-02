@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Typography, CircularProgress, Box } from '@mui/material';
+import { CircularProgress, Box } from '@mui/material';
 import { useAuthStore } from '@/store/authStore';
 import { SnackbarProvider } from '@/components/SnackbarProvider';
 import PublicLayout from '@/layouts/PublicLayout';
@@ -11,7 +11,9 @@ import Dashboard from '@/pages/Dashboard';
 import QuinielaDetail from '@/pages/QuinielaDetail';
 import Ranking from '@/pages/Ranking';
 import Pronosticos from '@/pages/Pronosticos';
+import PronosticosList from '@/pages/PronosticosList';
 import Grupos from '@/pages/Grupos';
+import Perfil from '@/pages/Perfil';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -19,7 +21,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: '#0F172A' }}>
         <CircularProgress />
       </Box>
     );
@@ -35,7 +37,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: '#0F172A' }}>
         <CircularProgress />
       </Box>
     );
@@ -59,11 +61,12 @@ export default function AppRouter() {
         <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="pronosticos" element={<PronosticosList />} />
+          <Route path="grupos" element={<Grupos />} />
+          <Route path="perfil" element={<Perfil />} />
           <Route path="quiniela/:id" element={<QuinielaDetail />} />
           <Route path="quiniela/:id/ranking" element={<Ranking />} />
           <Route path="quiniela/:id/pronosticos" element={<Pronosticos />} />
-          <Route path="grupos" element={<Grupos />} />
-          <Route path="resultados" element={<Typography variant="h4" sx={{ fontWeight: 700 }}>Resultados</Typography>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

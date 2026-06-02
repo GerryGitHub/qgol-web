@@ -9,7 +9,7 @@ export default function PublicLayout() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0a0a1a 0%, #12122a 50%, #0f0f25 100%)',
+        bgcolor: '#0F172A',
         p: 2,
       }}
     >

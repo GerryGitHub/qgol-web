@@ -2,14 +2,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   CircularProgress,
   Alert,
-  Chip,
   Avatar,
-  useMediaQuery,
-  useTheme,
   IconButton,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -19,181 +14,56 @@ import { useLeaderboard, useQuinielaDetalle } from '@/hooks/useQuinielas';
 import { useAuthStore } from '@/store/authStore';
 import type { LeaderboardEntryDTO } from '@/api/generated';
 
-const medalColors = ['#f59e0b', '#94a3b8', '#cd7f32'];
+const medalColors = ['#F59E0B', '#94A3B8', '#CD7F32'];
 
-function PositionBadge({ posicion }: { posicion: number }) {
+function RankBadge({ posicion }: { posicion: number }) {
   if (posicion <= 3) {
     return <EmojiEventsIcon sx={{ color: medalColors[posicion - 1], fontSize: 28 }} />;
   }
   return (
-    <Typography
-      variant="body2"
-      sx={{
-        width: 28,
-        height: 28,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'text.secondary',
-        fontWeight: 600,
-        fontSize: '0.8rem',
-      }}
-    >
+    <Typography sx={{ width: 28, textAlign: 'center', fontWeight: 700, color: '#64748B', fontSize: '0.85rem' }}>
       {posicion}
     </Typography>
   );
 }
 
-function LeaderboardCard({
-  entry,
-  isCurrentUser,
-}: {
-  entry: LeaderboardEntryDTO;
-  isCurrentUser: boolean;
-}) {
+function LeaderboardRow({ entry, isCurrentUser }: { entry: LeaderboardEntryDTO; isCurrentUser: boolean }) {
   return (
-    <Card
+    <Box
       sx={{
-        bgcolor: isCurrentUser ? 'rgba(99, 102, 241, 0.08)' : 'background.paper',
-        border: isCurrentUser ? '1px solid' : '1px solid transparent',
-        borderColor: isCurrentUser ? 'primary.main' : 'divider',
-        transition: 'transform 0.2s',
-        '&:hover': { transform: 'translateX(4px)' },
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        bgcolor: isCurrentUser ? 'rgba(59, 130, 246, 0.08)' : '#334155',
+        borderRadius: 3,
+        p: 2,
+        border: isCurrentUser ? '1.5px solid' : 'none',
+        borderColor: isCurrentUser ? '#3B82F6' : 'transparent',
       }}
     >
-      <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <PositionBadge posicion={entry.posicion} />
+      <RankBadge posicion={entry.posicion} />
 
-        <Avatar
-          sx={{
-            width: 36,
-            height: 36,
-            fontSize: '0.8rem',
-            bgcolor: isCurrentUser ? 'secondary.main' : 'primary.main',
-            fontWeight: 700,
-          }}
-        >
-          {entry.usuario.nombre.charAt(0).toUpperCase()}
-        </Avatar>
+      <Avatar sx={{ width: 40, height: 40, bgcolor: isCurrentUser ? '#3B82F6' : '#22C55E', fontSize: '0.85rem' }}>
+        {entry.usuario.nombre.charAt(0).toUpperCase()}
+      </Avatar>
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 700,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {entry.usuario.nombre}
-            </Typography>
-            {isCurrentUser && (
-              <StarsIcon sx={{ fontSize: 16, color: 'secondary.main', flexShrink: 0 }} />
-            )}
-          </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography sx={{ fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
+            {entry.usuario.nombre}
+          </Typography>
+          {isCurrentUser && <StarsIcon sx={{ fontSize: 16, color: '#3B82F6' }} />}
         </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Pts
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-              {entry.puntosTotales}
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Hit
-            </Typography>
-            <Chip
-              label={entry.aciertos}
-              size="small"
-              color="success"
-              variant="outlined"
-              sx={{ fontWeight: 700, minWidth: 32 }}
-            />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
-function LeaderboardTable({
-  entries,
-  currentUserId,
-}: {
-  entries: LeaderboardEntryDTO[];
-  currentUserId: number;
-}) {
-  return (
-    <Box sx={{ overflow: 'hidden', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: '48px 1fr 64px 80px',
-          gap: 0,
-          bgcolor: 'rgba(99, 102, 241, 0.08)',
-          px: 2,
-          py: 1,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>#</Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Participante</Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textAlign: 'center' }}>Pts</Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textAlign: 'center' }}>Aciertos</Typography>
       </Box>
-      {entries.map((entry) => {
-        const isCurrentUser = entry.usuario.id === currentUserId;
-        return (
-          <Box
-            key={entry.usuario.id}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '48px 1fr 64px 80px',
-              gap: 0,
-              px: 2,
-              py: 1.25,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              bgcolor: isCurrentUser ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
-              '&:last-child': { borderBottom: 0 },
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <PositionBadge posicion={entry.posicion} />
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-              <Avatar sx={{ width: 28, height: 28, fontSize: '0.7rem', bgcolor: isCurrentUser ? 'secondary.main' : 'primary.main', fontWeight: 700 }}>
-                {entry.usuario.nombre.charAt(0).toUpperCase()}
-              </Avatar>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: isCurrentUser ? 700 : 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {entry.usuario.nombre}
-              </Typography>
-              {isCurrentUser && <StarsIcon sx={{ fontSize: 14, color: 'secondary.main', flexShrink: 0 }} />}
-            </Box>
-            <Typography variant="body2" sx={{ fontWeight: 700, textAlign: 'center', alignSelf: 'center' }}>
-              {entry.puntosTotales}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Chip label={entry.aciertos} size="small" color="success" variant="outlined" sx={{ fontWeight: 700, minWidth: 32 }} />
-            </Box>
-          </Box>
-        );
-      })}
+
+      <Box sx={{ textAlign: 'right' }}>
+        <Typography sx={{ fontWeight: 800, color: '#22C55E', fontSize: '1.1rem', lineHeight: 1 }}>
+          {entry.puntosTotales}
+        </Typography>
+        <Typography sx={{ color: '#64748B', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 1 }}>
+          {entry.aciertos} hit
+        </Typography>
+      </Box>
     </Box>
   );
 }
@@ -202,9 +72,6 @@ export default function Ranking() {
   const { id } = useParams<{ id: string }>();
   const quinielaId = Number(id);
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const { data: leaderboard, isLoading, isError } = useLeaderboard(quinielaId);
   const { data: quiniela } = useQuinielaDetalle(quinielaId);
   const currentUser = useAuthStore((s) => s.usuario);
@@ -218,51 +85,41 @@ export default function Ranking() {
   }
 
   if (isError || !leaderboard) {
-    return <Alert severity="error">Error al cargar el ranking</Alert>;
+    return <Alert severity="error" sx={{ borderRadius: 3 }}>Error al cargar el ranking</Alert>;
   }
 
   const entries = [...leaderboard].sort((a, b) => a.posicion - b.posicion);
 
   return (
-    <Box>
+    <Box sx={{ pb: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
+        <IconButton onClick={() => navigate(-1)} sx={{ color: '#94A3B8' }}>
           <ArrowBackIcon />
         </IconButton>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>
-            Ranking
-          </Typography>
+          <Typography variant="h2" sx={{ color: '#fff' }}>Ranking</Typography>
           {quiniela && (
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {quiniela.nombre}
-            </Typography>
+            <Typography variant="body2" sx={{ color: '#94A3B8' }}>{quiniela.nombre}</Typography>
           )}
         </Box>
       </Box>
 
       {entries.length === 0 ? (
-        <Card sx={{ textAlign: 'center', py: 4 }}>
-          <CardContent>
-            <EmojiEventsIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.4, mb: 1 }} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>Sin participantes</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Comparte el código de invitación para que se unan.
-            </Typography>
-          </CardContent>
-        </Card>
-      ) : isMobile ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <EmojiEventsIcon sx={{ fontSize: 48, color: '#64748B', opacity: 0.4, mb: 1 }} />
+          <Typography variant="h5" sx={{ color: '#fff', fontWeight: 600 }}>Sin participantes</Typography>
+          <Typography variant="body2" sx={{ color: '#94A3B8' }}>Comparte el código de invitación.</Typography>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {entries.map((entry) => (
-            <LeaderboardCard
+            <LeaderboardRow
               key={entry.usuario.id}
               entry={entry}
               isCurrentUser={entry.usuario.id === currentUser?.id}
             />
           ))}
         </Box>
-      ) : (
-        <LeaderboardTable entries={entries} currentUserId={currentUser?.id ?? 0} />
       )}
     </Box>
   );

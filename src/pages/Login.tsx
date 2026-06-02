@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   Typography,
@@ -14,6 +12,7 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useLogin } from '@/hooks/useAuth';
 import { ApiError } from '@/api/generated';
 
@@ -39,17 +38,20 @@ export default function Login() {
   };
 
   return (
-    <Card sx={{ width: '100%', maxWidth: 420 }}>
-      <CardContent sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, textAlign: 'center', mb: 1 }}>
+    <Box sx={{ width: '100%', maxWidth: 400 }}>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <SportsSoccerIcon sx={{ fontSize: 48, color: '#22C55E', mb: 1 }} />
+        <Typography variant="h3" sx={{ fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>
           QGol
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', mb: 3 }}>
+        <Typography variant="body2" sx={{ color: '#94A3B8', mt: 0.5 }}>
           Mundial 2026 — Inicia Sesión
         </Typography>
+      </Box>
 
+      <Box sx={{ bgcolor: '#1E293B', borderRadius: 4, p: 3 }}>
         {login.isError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
             {getErrorMessage(login.error)}
           </Alert>
         )}
@@ -97,13 +99,13 @@ export default function Login() {
           </Button>
         </Box>
 
-        <Typography variant="body2" sx={{ textAlign: 'center', mt: 3 }}>
+        <Typography variant="body2" sx={{ textAlign: 'center', mt: 3, color: '#94A3B8' }}>
           ¿No tienes cuenta?{' '}
-          <Link component={RouterLink} to="/register" sx={{ color: 'primary.main', fontWeight: 600 }}>
+          <Link component={RouterLink} to="/register" sx={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>
             Regístrate
           </Link>
         </Typography>
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 }

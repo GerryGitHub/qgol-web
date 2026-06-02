@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Typography, CircularProgress, Box } from '@mui/material';
 import { useAuthStore } from '@/store/authStore';
+import { SnackbarProvider } from '@/components/SnackbarProvider';
 import PublicLayout from '@/layouts/PublicLayout';
 import MainLayout from '@/layouts/MainLayout';
 import Login from '@/pages/Login';
@@ -44,6 +45,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <SnackbarProvider />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />

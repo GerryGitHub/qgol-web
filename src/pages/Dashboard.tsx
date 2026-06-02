@@ -24,6 +24,7 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useQuinielas, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
 import type { QuinielaResumenDTO } from '@/types';
 import { ApiError } from '@/api/generated';
+import { useSnackbarStore } from '@/store/snackbarStore';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.body?.message) return error.body.message;
@@ -118,6 +119,7 @@ export default function Dashboard() {
   const [newNombre, setNewNombre] = useState('');
   const [nuevoCodigo, setNuevoCodigo] = useState('');
   const [codigo, setCodigo] = useState('');
+  const showSnackbar = useSnackbarStore((s) => s.show);
 
   return (
     <Box>
@@ -254,7 +256,7 @@ export default function Dashboard() {
         slotProps={{ paper: { sx: { bgcolor: '#12122a' } } }}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Unirse a Quiniela</DialogTitle>
-        <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); unirseQuiniela.mutate({ codigoInvitacion: codigo }, { onSuccess: () => { setUnirseOpen(false); setCodigo(''); } }); }}>
+        <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); unirseQuiniela.mutate({ codigoInvitacion: codigo }, { onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); } }); }}>
           <DialogContent>
             {unirseQuiniela.isError && (
               <Alert severity="error" sx={{ mb: 2 }}>{getErrorMessage(unirseQuiniela.error)}</Alert>

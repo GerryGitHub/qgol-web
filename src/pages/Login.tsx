@@ -15,6 +15,13 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useLogin } from '@/hooks/useAuth';
+import { ApiError } from '@/api/generated';
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.body?.message) return error.body.message;
+  if (error instanceof Error) return error.message;
+  return 'Error al iniciar sesión';
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -43,7 +50,7 @@ export default function Login() {
 
         {login.isError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {login.error instanceof Error ? login.error.message : 'Error al iniciar sesión'}
+            {getErrorMessage(login.error)}
           </Alert>
         )}
 

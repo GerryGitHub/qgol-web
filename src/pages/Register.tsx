@@ -15,12 +15,15 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useRegister } from '@/hooks/useAuth';
+import { ApiError } from '@/api/generated';
 
-interface Props {
-  onRegisterSuccess?: (email: string) => void;
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError && error.body?.message) return error.body.message;
+  if (error instanceof Error) return error.message;
+  return 'Error al registrarse';
 }
 
-export default function Register({ onRegisterSuccess }: Props) {
+export default function Register() {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,15 +37,7 @@ export default function Register({ onRegisterSuccess }: Props) {
     if (password !== confirmPassword) return;
     register.mutate(
       { nombre, email, password },
-      {
-        onSuccess: () => {
-          if (onRegisterSuccess) {
-            onRegisterSuccess(email);
-          } else {
-            navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
-          }
-        },
-      },
+      { onSuccess: () => navigate(`/verify-otp?email=${encodeURIComponent(email)}`) },
     );
   };
 
@@ -60,7 +55,7 @@ export default function Register({ onRegisterSuccess }: Props) {
 
         {register.isError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {register.error instanceof Error ? register.error.message : 'Error al registrarse'}
+            {getErrorMessage(register.error)}
           </Alert>
         )}
 

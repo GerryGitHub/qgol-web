@@ -13,15 +13,14 @@ import {
   Fab,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useAuthStore } from '@/store/authStore';
 import { useQuinielas, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
 import type { QuinielaResumenDTO } from '@/types';
 import { ApiError } from '@/api/generated';
 import { useSnackbarStore } from '@/store/snackbarStore';
-import SectionHeader from '@/components/ui/SectionHeader';
-import EmptyState from '@/components/ui/EmptyState';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
 function getErrorMessage(error: unknown): string {
@@ -32,32 +31,48 @@ function getErrorMessage(error: unknown): string {
 
 function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
   const navigate = useNavigate();
+  const showSnackbar = useSnackbarStore((s) => s.show);
+
+  const handleCopyCode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(quiniela.codigoInvitacion);
+    showSnackbar('Código copiado', 'success');
+  };
 
   return (
     <Box
       onClick={() => navigate(`/quiniela/${quiniela.id}`)}
       sx={{
-        bgcolor: '#334155',
-        borderRadius: 4,
+        bgcolor: 'rgba(11, 18, 32, 0.3)',
+        borderRadius: 3,
         p: 2.5,
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 6px 20px rgba(0,0,0,0.3)' },
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        transition: 'all 0.2s ease',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        '&:hover': { bgcolor: 'rgba(11, 18, 32, 0.45)', borderColor: 'rgba(255, 255, 255, 0.25)' },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
-          {quiniela.nombre}
-        </Typography>
-        <ChevronRightIcon sx={{ color: '#64748B', fontSize: 24, flexShrink: 0 }} />
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="body2" sx={{ color: '#94A3B8', fontFamily: 'monospace', fontSize: '0.8rem' }}>
-          {quiniela.codigoInvitacion}
-        </Typography>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: '#22C55E' }}>
-          {quiniela.puntosTotales} pts
-        </Typography>
+      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+        {quiniela.nombre}
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+        <Box
+          onClick={handleCopyCode}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1.5, px: 1.25, py: 0.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+        >
+          <ContentCopyIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }} />
+          <Typography sx={{ fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 500, letterSpacing: 0.5 }}>
+            {quiniela.codigoInvitacion}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#2563EB', borderRadius: 2, px: 1.5, py: 0.75 }}>
+          <Typography sx={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{quiniela.puntosTotales}</Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.5rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>pts</Typography>
+        </Box>
       </Box>
     </Box>
   );
@@ -65,6 +80,7 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { usuario } = useAuthStore();
   const { data: quinielas, isLoading, isError } = useQuinielas();
   const crearQuiniela = useCrearQuiniela();
   const unirseQuiniela = useUnirseQuiniela();
@@ -76,21 +92,16 @@ export default function Dashboard() {
   const [codigo, setCodigo] = useState('');
 
   return (
-    <Box sx={{ pb: 8 }}>
-      <SectionHeader
-        title="Mis Quinielas"
-        subtitle={quinielas ? `${quinielas.length} quiniela${quinielas.length !== 1 ? 's' : ''}` : undefined}
-        action={
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" startIcon={<ContentPasteIcon />} onClick={() => setUnirseOpen(true)}>
-              Unirse
-            </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCrearOpen(true)}>
-              Crear
-            </Button>
-          </Box>
-        }
-      />
+    <Box sx={{ pb: 12 }}>
+      {usuario && (
+        <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
+          Bienvenido, {usuario.nombre}
+        </Typography>
+      )}
+
+      <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', mb: 2.5, letterSpacing: '-0.5px' }}>
+        Mis Quinielas
+      </Typography>
 
       {isLoading && <LoadingScreen />}
 
@@ -101,16 +112,27 @@ export default function Dashboard() {
       )}
 
       {quinielas && quinielas.length === 0 && (
-        <EmptyState
-          icon={<EmojiEventsIcon />}
-          title="Crea tu primera quiniela"
-          description="Invita amigos y compite durante el Mundial 2026"
-          action={{ label: 'Crear Quiniela', onClick: () => setCrearOpen(true) }}
-        />
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <EmojiEventsIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.2)', mb: 2 }} />
+          <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem' }}>
+            No tienes quinielas aún
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', mt: 0.5, mb: 3 }}>
+            ¡Crea una o únete para empezar!
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCrearOpen(true)}>
+              Crear Quiniela
+            </Button>
+            <Button variant="outlined" startIcon={<ContentPasteIcon />} onClick={() => setUnirseOpen(true)}>
+              Unirse
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {quinielas && quinielas.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {quinielas.map((q) => (
             <QuinielaCard key={q.id} quiniela={q} />
           ))}
@@ -120,16 +142,15 @@ export default function Dashboard() {
       <Fab
         color="primary"
         onClick={() => setCrearOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 88, md: 24 },
-          right: 24,
-          width: 56,
-          height: 56,
-          boxShadow: '0 4px 14px rgba(34, 197, 94, 0.35)',
-        }}
+        sx={{ position: 'fixed', bottom: { xs: 88, md: 24 }, right: 24, zIndex: 10 }}
       >
         <AddIcon />
+      </Fab>
+      <Fab
+        onClick={() => setUnirseOpen(true)}
+        sx={{ position: 'fixed', bottom: { xs: 152, md: 88 }, right: 24, zIndex: 10, bgcolor: '#00B86B', '&:hover': { bgcolor: '#009B5C' } }}
+      >
+        <ContentPasteIcon />
       </Fab>
 
       <Dialog open={crearOpen} onClose={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} maxWidth="sm" fullWidth>
@@ -149,7 +170,7 @@ export default function Dashboard() {
             <TextField fullWidth label="Código de invitación" placeholder="Ej: MUNDIAL2026" helperText="Compártelo con otros participantes" value={nuevoCodigo} onChange={(e) => setNuevoCodigo(e.target.value)} required />
           </DialogContent>
           <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button onClick={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} sx={{ color: '#94A3B8' }}>Cancelar</Button>
+            <Button onClick={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
             <Button type="submit" variant="contained" disabled={!newNombre || !nuevoCodigo || crearQuiniela.isPending}>
               {crearQuiniela.isPending ? 'Creando...' : 'Crear'}
             </Button>
@@ -159,7 +180,12 @@ export default function Dashboard() {
 
       <Dialog open={unirseOpen} onClose={() => setUnirseOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#fff' }}>Unirse a Quiniela</DialogTitle>
-        <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); unirseQuiniela.mutate({ codigoInvitacion: codigo }, { onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); } }); }}>
+        <Box component="form" onSubmit={(e: React.FormEvent) => {
+          e.preventDefault();
+          unirseQuiniela.mutate({ codigoInvitacion: codigo }, {
+            onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); },
+          });
+        }}>
           <DialogContent>
             {unirseQuiniela.isError && (
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(unirseQuiniela.error)}</Alert>
@@ -167,7 +193,7 @@ export default function Dashboard() {
             <TextField fullWidth label="Código de invitación" placeholder="Ingresa el código" value={codigo} onChange={(e) => setCodigo(e.target.value)} required autoFocus />
           </DialogContent>
           <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button onClick={() => setUnirseOpen(false)} sx={{ color: '#94A3B8' }}>Cancelar</Button>
+            <Button onClick={() => setUnirseOpen(false)} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
             <Button type="submit" variant="contained" disabled={!codigo || unirseQuiniela.isPending}>
               {unirseQuiniela.isPending ? 'Uniendo...' : 'Unirse'}
             </Button>

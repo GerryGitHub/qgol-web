@@ -9,11 +9,9 @@ import Register from '@/pages/Register';
 import VerifyOtp from '@/pages/VerifyOtp';
 import Dashboard from '@/pages/Dashboard';
 import QuinielaDetail from '@/pages/QuinielaDetail';
-import Ranking from '@/pages/Ranking';
 import Pronosticos from '@/pages/Pronosticos';
-import PronosticosList from '@/pages/PronosticosList';
 import Grupos from '@/pages/Grupos';
-import Perfil from '@/pages/Perfil';
+import Resultados from '@/pages/Resultados';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -61,12 +59,10 @@ export default function AppRouter() {
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="pronosticos" element={<PronosticosList />} />
+          <Route path="pronosticos" element={<Pronosticos />} />
           <Route path="grupos" element={<Grupos />} />
-          <Route path="perfil" element={<Perfil />} />
+          <Route path="resultados" element={<Resultados />} />
           <Route path="quiniela/:id" element={<QuinielaDetail />} />
-          <Route path="quiniela/:id/ranking" element={<Ranking />} />
-          <Route path="quiniela/:id/pronosticos" element={<Pronosticos />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

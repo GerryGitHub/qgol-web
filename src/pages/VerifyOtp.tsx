@@ -1,12 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  Alert,
-  Button,
-} from '@mui/material';
-import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
+import { Box, Typography, Alert, Button } from '@mui/material';
 import { useVerifyOtp, useResendOtp } from '@/hooks/useAuth';
 
 export default function VerifyOtp() {
@@ -48,80 +42,87 @@ export default function VerifyOtp() {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 400 }}>
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <SportsSoccerIcon sx={{ fontSize: 48, color: '#22C55E', mb: 1 }} />
-        <Typography variant="h3" sx={{ fontWeight: 900, color: '#fff' }}>
-          Verifica tu cuenta
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#94A3B8', mt: 0.5 }}>
-          Código enviado a{' '}
-          <Typography component="span" sx={{ color: '#fff', fontWeight: 600 }}>
-            {email}
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+      <Box sx={{ width: '100%', maxWidth: 420 }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Box
+            component="img"
+            src="/logo/qgol.png"
+            alt="QGol"
+            sx={{ width: 72, height: 72, mx: 'auto', mb: 1.5, objectFit: 'contain' }}
+          />
+          <Typography variant="h2" sx={{ fontWeight: 900, color: '#fff' }}>
+            Verifica tu cuenta
           </Typography>
-        </Typography>
-      </Box>
-
-      <Box sx={{ bgcolor: '#1E293B', borderRadius: 4, p: 3 }}>
-        {verifyOtp.isError && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-            {verifyOtp.error instanceof Error ? verifyOtp.error.message : 'Código inválido'}
-          </Alert>
-        )}
-        {verifyOtp.isSuccess && (
-          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
-            ¡Cuenta verificada! Ahora puedes iniciar sesión.
-          </Alert>
-        )}
-
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 3 }}>
-          {code.map((digit, index) => (
-            <Box
-              key={index}
-              component="input"
-              ref={(el: HTMLInputElement | null) => setInputRef(el, index)}
-              value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              sx={{
-                width: 48,
-                height: 56,
-                textAlign: 'center',
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                bgcolor: '#0F172A',
-                border: '2px solid',
-                borderColor: digit ? '#22C55E' : '#334155',
-                borderRadius: 2,
-                color: '#fff',
-                outline: 'none',
-                caretColor: '#22C55E',
-                '&:focus': { borderColor: '#22C55E' },
-              }}
-            />
-          ))}
+          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', mt: 0.5 }}>
+            Código enviado a{' '}
+            <Typography component="span" sx={{ color: '#fff', fontWeight: 600 }}>
+              {email}
+            </Typography>
+          </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          fullWidth
-          size="large"
-          disabled={code.join('').length !== 6 || verifyOtp.isPending}
-          onClick={handleSubmit}
-          sx={{ mb: 2 }}
-        >
-          {verifyOtp.isPending ? 'Verificando...' : 'Verificar'}
-        </Button>
+        <Box sx={{ bgcolor: 'rgba(11, 18, 32, 0.95)', borderRadius: 4, p: 3, border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+          {verifyOtp.isError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: 2, bgcolor: 'rgba(255,77,77,0.1)', color: '#FF4D4D', '& .MuiAlert-icon': { color: '#FF4D4D' } }}>
+              {verifyOtp.error instanceof Error ? verifyOtp.error.message : 'Código inválido'}
+            </Alert>
+          )}
+          {verifyOtp.isSuccess && (
+            <Alert severity="success" sx={{ mb: 2, borderRadius: 2, bgcolor: 'rgba(0,184,107,0.1)', color: '#00B86B', '& .MuiAlert-icon': { color: '#00B86B' } }}>
+              ¡Cuenta verificada! Ahora puedes iniciar sesión.
+            </Alert>
+          )}
 
-        <Button
-          variant="text"
-          fullWidth
-          disabled={resendOtp.isPending}
-          onClick={() => resendOtp.mutate({ email })}
-          sx={{ color: '#94A3B8' }}
-        >
-          {resendOtp.isPending ? 'Enviando...' : 'Reenviar código'}
-        </Button>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 3 }}>
+            {code.map((digit, index) => (
+              <Box
+                key={index}
+                component="input"
+                ref={(el: HTMLInputElement | null) => setInputRef(el, index)}
+                value={digit}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                sx={{
+                  width: 44,
+                  height: 52,
+                  textAlign: 'center',
+                  fontSize: '1.4rem',
+                  fontWeight: 700,
+                  bgcolor: 'rgba(11, 18, 32, 0.3)',
+                  border: '2px solid',
+                  borderColor: digit ? '#0D5BFF' : 'rgba(255,255,255,0.15)',
+                  borderRadius: 2,
+                  color: '#fff',
+                  outline: 'none',
+                  caretColor: '#0D5BFF',
+                  '&:focus': { borderColor: '#0D5BFF' },
+                }}
+              />
+            ))}
+          </Box>
+
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            disabled={code.join('').length !== 6 || verifyOtp.isPending}
+            onClick={handleSubmit}
+            sx={{ mb: 2, minHeight: 52, fontSize: '1rem' }}
+          >
+            {verifyOtp.isPending ? 'Verificando...' : 'Verificar'}
+          </Button>
+
+          <Button
+            variant="text"
+            fullWidth
+            disabled={resendOtp.isPending}
+            onClick={() => resendOtp.mutate({ email })}
+            sx={{ color: 'rgba(255,255,255,0.5)' }}
+          >
+            {resendOtp.isPending ? 'Enviando...' : 'Reenviar código'}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

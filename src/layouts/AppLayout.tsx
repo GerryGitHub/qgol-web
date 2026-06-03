@@ -14,14 +14,14 @@ import MenuIcon from '@mui/icons-material/Menu';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import GroupsIcon from '@mui/icons-material/Groups';
-import PersonIcon from '@mui/icons-material/Person';
+import TableChartIcon from '@mui/icons-material/TableChart';
 import Sidebar from '@/components/layout/Sidebar';
 
 const navItems = [
   { label: 'Quinielas', path: '/dashboard', icon: <EmojiEventsIcon /> },
   { label: 'Pronósticos', path: '/pronosticos', icon: <SportsSoccerIcon /> },
   { label: 'Grupos', path: '/grupos', icon: <GroupsIcon /> },
-  { label: 'Perfil', path: '/perfil', icon: <PersonIcon /> },
+  { label: 'Resultados', path: '/resultados', icon: <TableChartIcon /> },
 ];
 
 const hideNavPaths = new Set(['/login', '/register', '/verify-otp']);
@@ -34,37 +34,52 @@ export default function AppLayout() {
   const [mobileDrawer, setMobileDrawer] = useState(false);
 
   const showNav = !hideNavPaths.has(location.pathname);
-
   const currentTab = navItems.findIndex((item) => {
     if (item.path === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(item.path);
   });
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#0F172A', display: 'flex' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', position: 'relative', overflow: 'hidden', bgcolor: '#0B1220' }}>
+      <Box
+        component="img"
+        src="/bg/cancha.png"
+        alt=""
+        sx={{ position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: 0 }}
+      />
+      <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.6)', pointerEvents: 'none', zIndex: 1 }} />
+
       {isDesktop && (
         <Drawer
           variant="permanent"
           sx={{
             width: 250,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: 250, boxSizing: 'border-box' },
+            position: 'relative',
+            zIndex: 2,
+            '& .MuiDrawer-paper': {
+              width: 250,
+              boxSizing: 'border-box',
+              bgcolor: 'rgba(11, 18, 32, 0.85)',
+              backdropFilter: 'blur(16px)',
+              borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+            },
           }}
         >
           <Sidebar />
         </Drawer>
       )}
 
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', zIndex: 2 }}>
         {!isDesktop && showNav && (
           <Box
             sx={{
               position: 'sticky',
               top: 0,
               zIndex: 1100,
-              bgcolor: 'rgba(15, 23, 42, 0.92)',
-              backdropFilter: 'blur(12px)',
-              borderBottom: '1px solid #334155',
+              bgcolor: 'rgba(11, 18, 32, 0.9)',
+              backdropFilter: 'blur(16px)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
               px: 2,
               py: 1.5,
               display: 'flex',
@@ -72,13 +87,13 @@ export default function AppLayout() {
               justifyContent: 'space-between',
             }}
           >
-            <IconButton onClick={() => setMobileDrawer(true)} sx={{ color: '#94A3B8' }}>
+            <IconButton onClick={() => setMobileDrawer(true)} sx={{ color: 'rgba(255,255,255,0.6)' }}>
               <MenuIcon />
             </IconButton>
             <Typography
               component={RouterLink}
               to="/dashboard"
-              sx={{ fontWeight: 900, fontSize: '1.25rem', color: '#22C55E', textDecoration: 'none' }}
+              sx={{ fontWeight: 900, fontSize: '1.25rem', color: '#fff', textDecoration: 'none', letterSpacing: '-0.5px' }}
             >
               QGol
             </Typography>
@@ -90,9 +105,9 @@ export default function AppLayout() {
           sx={{
             flex: 1,
             width: '100%',
-            maxWidth: 1400,
+            maxWidth: 1440,
             mx: 'auto',
-            px: { xs: 2, md: 4, lg: 6 },
+            px: { xs: 2, md: 4, lg: 5 },
             py: { xs: 2, md: 3 },
             pb: showNav && !isDesktop ? '80px' : 3,
           }}
@@ -123,7 +138,7 @@ export default function AppLayout() {
         anchor="left"
         open={mobileDrawer}
         onClose={() => setMobileDrawer(false)}
-        sx={{ '& .MuiDrawer-paper': { width: 280 } }}
+        sx={{ position: 'relative', zIndex: 1300, '& .MuiDrawer-paper': { width: 280 } }}
       >
         <Sidebar />
       </Drawer>

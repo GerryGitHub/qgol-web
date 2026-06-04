@@ -155,22 +155,22 @@ export default function Pronosticos() {
                 const partido = partidos[index];
                 return (
                   <Box key={field.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 3, p: 2, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <FlagIcon country={partido.equipoLocal} size={20} />
-                      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <FlagIcon country={partido.equipoLocal} size={16} />
+                      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'right', minWidth: 0, wordBreak: 'break-word' }}>
                         {partido.equipoLocal}
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 32, p: '6px 2px', fontWeight: 800, fontSize: '0.9rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                        <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
                           {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })} />
-                        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.7rem' }}>-</Typography>
-                        <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 32, p: '6px 2px', fontWeight: 800, fontSize: '0.9rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
+                        <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.85rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
                           {...register(`pronosticos.${index}.golesVisitantePredicho`, { valueAsNumber: true, min: 0 })} />
                       </Box>
-                      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'left', minWidth: 0, wordBreak: 'break-word' }}>
                         {partido.equipoVisitante}
                       </Typography>
-                      <FlagIcon country={partido.equipoVisitante} size={20} />
+                      <FlagIcon country={partido.equipoVisitante} size={16} />
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 1 }}>
                       <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>

@@ -123,7 +123,7 @@ export default function QuinielaDetail() {
   const showSnackbar = useSnackbarStore((s) => s.show);
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
   const { data: misPronosticos } = useMisPronosticos(quinielaId);
@@ -279,30 +279,30 @@ export default function QuinielaDetail() {
 
                       return (
                         <Box key={p.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 3, p: 2, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <FlagIcon country={p.equipoLocal} size={18} />
-                            <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FlagIcon country={p.equipoLocal} size={16} />
+                            <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'right', minWidth: 0, wordBreak: 'break-word' }}>
                               {p.equipoLocal}
                             </Typography>
 
                             {isEditable && index >= 0 ? (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.85rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
                                   {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })} />
-                                <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.7rem' }}>-</Typography>
-                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.85rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                                <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
+                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
                                   {...register(`pronosticos.${index}.golesVisitantePredicho`, { valueAsNumber: true, min: 0 })} />
                               </Box>
                             ) : (
-                              <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', color: p.estado === 'FINALIZADO' ? '#fff' : 'rgba(255,255,255,0.3)', mx: 1 }}>
+                              <Typography sx={{ fontWeight: 900, fontSize: '1rem', color: p.estado === 'FINALIZADO' ? '#fff' : 'rgba(255,255,255,0.3)', mx: 0.5, flexShrink: 0 }}>
                                 {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
                               </Typography>
                             )}
 
-                            <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'left', minWidth: 0, wordBreak: 'break-word' }}>
                               {p.equipoVisitante}
                             </Typography>
-                            <FlagIcon country={p.equipoVisitante} size={18} />
+                            <FlagIcon country={p.equipoVisitante} size={16} />
                           </Box>
 
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 1 }}>

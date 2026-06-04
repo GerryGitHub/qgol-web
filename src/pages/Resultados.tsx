@@ -37,14 +37,14 @@ export default function Resultados() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {partidos.map((p) => (
           <Box key={p.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 3, p: 2.5, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', textAlign: 'center' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 1 }}>
-              <FlagIcon country={p.equipoLocal} size={20} />
-              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.85rem' }}>{p.equipoLocal}</Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: '1.4rem', color: '#0D5BFF', mx: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+              <FlagIcon country={p.equipoLocal} size={16} />
+              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
+              <Typography sx={{ fontWeight: 900, fontSize: '1.2rem', color: '#0D5BFF', mx: 1 }}>
                 {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
               </Typography>
-              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.85rem' }}>{p.equipoVisitante}</Typography>
-              <FlagIcon country={p.equipoVisitante} size={20} />
+              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
+              <FlagIcon country={p.equipoVisitante} size={16} />
             </Box>
             <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', mb: 0.75 }}>
               {formatFecha(p.fechaHora)} — {formatHora(p.fechaHora)}

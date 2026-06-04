@@ -52,7 +52,7 @@ export default function Grupos() {
                   <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
                       <FlagIcon country={s.nombre} size={14} />
-                      <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.75rem', wordBreak: 'break-word' }}>
                         {s.nombre}
                       </Typography>
                     </Box>

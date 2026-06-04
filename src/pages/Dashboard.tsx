@@ -99,7 +99,6 @@ export default function Dashboard() {
   const [crearOpen, setCrearOpen] = useState(false);
   const [unirseOpen, setUnirseOpen] = useState(false);
   const [newNombre, setNewNombre] = useState('');
-  const [nuevoCodigo, setNuevoCodigo] = useState('');
   const [codigo, setCodigo] = useState('');
   const [qrQuiniela, setQrQuiniela] = useState<QuinielaResumenDTO | null>(null);
 
@@ -165,25 +164,24 @@ export default function Dashboard() {
         <ContentPasteIcon />
       </Fab>
 
-      <Dialog open={crearOpen} onClose={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} maxWidth="sm" fullWidth>
+      <Dialog open={crearOpen} onClose={() => { setCrearOpen(false); setNewNombre(''); }} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#fff' }}>Crear Quiniela</DialogTitle>
         <Box component="form" onSubmit={(e: React.FormEvent) => {
           e.preventDefault();
           crearQuiniela.mutate(
-            { nombre: newNombre, codigoInvitacion: nuevoCodigo },
-            { onSuccess: (data) => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); navigate(`/quiniela/${data.id}`); } },
+            { nombre: newNombre, codigoInvitacion: '' },
+            { onSuccess: (data) => { setCrearOpen(false); setNewNombre(''); navigate(`/quiniela/${data.id}`); } },
           );
         }}>
           <DialogContent>
             {crearQuiniela.isError && (
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(crearQuiniela.error)}</Alert>
             )}
-            <TextField fullWidth label="Nombre" placeholder="Ej: Mundial 2026 Amigos" value={newNombre} onChange={(e) => setNewNombre(e.target.value)} required autoFocus sx={{ mb: 2 }} />
-            <TextField fullWidth label="Código de invitación" placeholder="Ej: MUNDIAL2026" helperText="Compártelo con otros participantes" value={nuevoCodigo} onChange={(e) => setNuevoCodigo(e.target.value)} required />
+            <TextField fullWidth label="Nombre" placeholder="Ej: Mundial 2026 Amigos" value={newNombre} onChange={(e) => setNewNombre(e.target.value)} required autoFocus />
           </DialogContent>
           <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button onClick={() => { setCrearOpen(false); setNewNombre(''); setNuevoCodigo(''); }} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={!newNombre || !nuevoCodigo || crearQuiniela.isPending}>
+            <Button onClick={() => { setCrearOpen(false); setNewNombre(''); }} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
+            <Button type="submit" variant="contained" disabled={!newNombre || crearQuiniela.isPending}>
               {crearQuiniela.isPending ? 'Creando...' : 'Crear'}
             </Button>
           </DialogActions>

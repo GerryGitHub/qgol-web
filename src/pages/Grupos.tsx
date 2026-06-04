@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import GroupsIcon from '@mui/icons-material/Groups';
 import { useGrupos } from '@/hooks/useGrupos';
 import type { SeleccionDTO } from '@/types';
+import FlagIcon from '@/components/ui/FlagIcon';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import EmptyState from '@/components/ui/EmptyState';
 
@@ -46,11 +47,19 @@ export default function Grupos() {
               <Typography sx={{ fontWeight: 800, color: '#0D5BFF', fontSize: '1.1rem', mb: 1.5 }}>
                 Grupo {g.nombre}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {sorted.map((s) => (
-                  <Typography key={s.id} sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', lineHeight: 1.5 }}>
-                    {s.nombre} — Pts: {s.puntos}, PJ: {s.partidosJugados}, GF: {s.golesAFavor}, GC: {s.golesEnContra}
-                  </Typography>
+                  <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                      <FlagIcon country={s.nombre} size={14} />
+                      <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                        {s.nombre}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', whiteSpace: 'nowrap' }}>
+                      Pts: {s.puntos} · PJ: {s.partidosJugados} · GF: {s.golesAFavor} · GC: {s.golesEnContra}
+                    </Typography>
+                  </Box>
                 ))}
               </Box>
             </Box>

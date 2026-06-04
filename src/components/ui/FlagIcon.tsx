@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Box } from '@mui/material';
 
 const COUNTRY_TO_CODE: Record<string, string> = {
@@ -101,15 +102,17 @@ function getFlagUrl(country: string): string | null {
   return `/flags/${code}.png`;
 }
 
-export default function FlagIcon({ country, size = 16 }: { country: string; size?: number }) {
+export default function FlagIcon({ country, size = 16, showName }: { country: string; size?: number; showName?: boolean }) {
+  const [failed, setFailed] = useState(false);
   const src = getFlagUrl(country);
 
-  if (src) {
+  if (src && !failed) {
     return (
       <Box
         component="img"
         src={src}
         alt={country}
+        onError={() => setFailed(true)}
         sx={{
           width: size,
           height: size * 0.75,
@@ -130,7 +133,9 @@ export default function FlagIcon({ country, size = 16 }: { country: string; size
       sx={{
         fontSize: size,
         lineHeight: 1,
-        display: 'inline-block',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: showName ? 0.5 : 0,
         flexShrink: 0,
       }}
     >

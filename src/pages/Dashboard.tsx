@@ -11,11 +11,15 @@ import {
   TextField,
   Alert,
   Fab,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import ShareIcon from '@mui/icons-material/Share';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useAuthStore } from '@/store/authStore';
 import { useQuinielas, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
 import type { QuinielaResumenDTO } from '@/types';
@@ -29,7 +33,7 @@ function getErrorMessage(error: unknown): string {
   return 'Error';
 }
 
-function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
+function QuinielaCard({ quiniela, onShowQR }: { quiniela: QuinielaResumenDTO; onShowQR: (q: QuinielaResumenDTO) => void }) {
   const navigate = useNavigate();
   const showSnackbar = useSnackbarStore((s) => s.show);
 
@@ -59,7 +63,7 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
       <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
         {quiniela.nombre}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
         <Box
           onClick={handleCopyCode}
           sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1.5, px: 1.25, py: 0.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
@@ -69,6 +73,13 @@ function QuinielaCard({ quiniela }: { quiniela: QuinielaResumenDTO }) {
             {quiniela.codigoInvitacion}
           </Typography>
         </Box>
+        <IconButton
+          onClick={(e) => { e.stopPropagation(); onShowQR(quiniela); }}
+          size="small"
+          sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#0D5BFF' } }}
+        >
+          <QrCode2Icon sx={{ fontSize: 18 }} />
+        </IconButton>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#2563EB', borderRadius: 2, px: 1.5, py: 0.75 }}>
           <Typography sx={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{quiniela.puntosTotales}</Typography>
           <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.5rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>pts</Typography>
@@ -90,6 +101,7 @@ export default function Dashboard() {
   const [newNombre, setNewNombre] = useState('');
   const [nuevoCodigo, setNuevoCodigo] = useState('');
   const [codigo, setCodigo] = useState('');
+  const [qrQuiniela, setQrQuiniela] = useState<QuinielaResumenDTO | null>(null);
 
   return (
     <Box sx={{ pb: 12 }}>
@@ -134,7 +146,7 @@ export default function Dashboard() {
       {quinielas && quinielas.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {quinielas.map((q) => (
-            <QuinielaCard key={q.id} quiniela={q} />
+            <QuinielaCard key={q.id} quiniela={q} onShowQR={setQrQuiniela} />
           ))}
         </Box>
       )}
@@ -199,6 +211,42 @@ export default function Dashboard() {
             </Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      <Dialog open={!!qrQuiniela} onClose={() => setQrQuiniela(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#fff', textAlign: 'center' }}>Invitar a la Quiniela</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', pb: 1 }}>
+          {qrQuiniela && (
+            <>
+              <Box sx={{ display: 'inline-flex', bgcolor: '#fff', borderRadius: 3, p: 2, mb: 2 }}>
+                <QRCodeCanvas value={qrQuiniela.codigoInvitacion} size={220} />
+              </Box>
+              <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff', fontSize: '1.1rem', letterSpacing: 2, mb: 0.5 }}>
+                {qrQuiniela.codigoInvitacion}
+              </Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
+                Comparte este código con tus amigos
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
+          <Button
+            variant="contained"
+            fullWidth
+            startIcon={<ShareIcon />}
+            onClick={() => {
+              if (!qrQuiniela) return;
+              const text = `¡Únete a mi quiniela "${qrQuiniela.nombre}" en QGol! Usa el código: ${qrQuiniela.codigoInvitacion}`;
+              if (navigator.share) navigator.share({ title: 'QGol', text });
+              else { navigator.clipboard.writeText(text); showSnackbar('Texto copiado para compartir', 'success'); }
+              setQrQuiniela(null);
+            }}
+            sx={{ py: 1.5 }}
+          >
+            Compartir código
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

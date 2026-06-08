@@ -22,7 +22,11 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 import EmptyState from '@/components/ui/EmptyState';
 
 interface FormValues {
-  pronosticos: PronosticoItemRequest[];
+  pronosticos: Array<{
+    idPartido: number;
+    golesLocalPredicho: number | '';
+    golesVisitantePredicho: number | '';
+  }>;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -78,13 +82,13 @@ export default function Pronosticos() {
     return map;
   }, [misPronosticos]);
 
-  const defaultValues = useMemo(() => ({
+  const defaultValues = useMemo((): FormValues => ({
     pronosticos: partidos.map((p) => {
       const existing = pronosticoMap.get(p.id);
       return {
         idPartido: p.id,
-        golesLocalPredicho: existing?.golesLocalPredicho ?? 0,
-        golesVisitantePredicho: existing?.golesVisitantePredicho ?? 0,
+        golesLocalPredicho: existing?.golesLocalPredicho ?? '',
+        golesVisitantePredicho: existing?.golesVisitantePredicho ?? '',
       };
     }),
   }), [partidos, pronosticoMap]);
@@ -162,10 +166,10 @@ export default function Pronosticos() {
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                         <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                          {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })} />
+                          {...register(`pronosticos.${index}.golesLocalPredicho`)} />
                         <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
                         <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 28, p: '4px 1px', fontWeight: 800, fontSize: '0.85rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                          {...register(`pronosticos.${index}.golesVisitantePredicho`, { valueAsNumber: true, min: 0 })} />
+                          {...register(`pronosticos.${index}.golesVisitantePredicho`)} />
                       </Box>
                       <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'left', minWidth: 0, wordBreak: 'break-word' }}>
                         {partido.equipoVisitante}

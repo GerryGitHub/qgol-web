@@ -12,12 +12,15 @@ import {
   Alert,
   Fab,
   IconButton,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import ShareIcon from '@mui/icons-material/Share';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useAuthStore } from '@/store/authStore';
@@ -26,6 +29,7 @@ import type { QuinielaResumenDTO } from '@/types';
 import { ApiError } from '@/api/generated';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import QrScanner from '@/components/ui/QrScanner';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.body?.message) return error.body.message;
@@ -98,6 +102,7 @@ export default function Dashboard() {
   const showSnackbar = useSnackbarStore((s) => s.show);
   const [crearOpen, setCrearOpen] = useState(false);
   const [unirseOpen, setUnirseOpen] = useState(false);
+  const [unirseMode, setUnirseMode] = useState<'code' | 'scan'>('code');
   const [newNombre, setNewNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [qrQuiniela, setQrQuiniela] = useState<QuinielaResumenDTO | null>(null);
@@ -188,27 +193,55 @@ export default function Dashboard() {
         </Box>
       </Dialog>
 
-      <Dialog open={unirseOpen} onClose={() => setUnirseOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={unirseOpen} onClose={() => { setUnirseOpen(false); setUnirseMode('code'); }} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#fff' }}>Unirse a Quiniela</DialogTitle>
-        <Box component="form" onSubmit={(e: React.FormEvent) => {
-          e.preventDefault();
-          unirseQuiniela.mutate({ codigoInvitacion: codigo }, {
-            onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); },
-          });
-        }}>
+        <ToggleButtonGroup
+          value={unirseMode}
+          exclusive
+          onChange={(_, v) => v && setUnirseMode(v)}
+          size="small"
+          sx={{ display: 'flex', mx: 3, mb: 1, '& .MuiToggleButton-root': { flex: 1, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.15)', '&.Mui-selected': { color: '#0D5BFF', bgcolor: 'rgba(13,91,255,0.1)' } } }}
+        >
+          <ToggleButton value="code"><ContentPasteIcon sx={{ mr: 0.75, fontSize: 18 }} /> Ingresar código</ToggleButton>
+          <ToggleButton value="scan"><QrCodeScannerIcon sx={{ mr: 0.75, fontSize: 18 }} /> Escanear QR</ToggleButton>
+        </ToggleButtonGroup>
+        {unirseMode === 'code' ? (
+          <Box component="form" onSubmit={(e: React.FormEvent) => {
+            e.preventDefault();
+            unirseQuiniela.mutate({ codigoInvitacion: codigo }, {
+              onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); },
+            });
+          }}>
+            <DialogContent>
+              {unirseQuiniela.isError && (
+                <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(unirseQuiniela.error)}</Alert>
+              )}
+              <TextField fullWidth label="Código de invitación" placeholder="Ingresa el código" value={codigo} onChange={(e) => setCodigo(e.target.value)} required autoFocus />
+            </DialogContent>
+            <DialogActions sx={{ p: 2, pt: 0 }}>
+              <Button onClick={() => setUnirseOpen(false)} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
+              <Button type="submit" variant="contained" disabled={!codigo || unirseQuiniela.isPending}>
+                {unirseQuiniela.isPending ? 'Uniendo...' : 'Unirse'}
+              </Button>
+            </DialogActions>
+          </Box>
+        ) : (
           <DialogContent>
             {unirseQuiniela.isError && (
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(unirseQuiniela.error)}</Alert>
             )}
-            <TextField fullWidth label="Código de invitación" placeholder="Ingresa el código" value={codigo} onChange={(e) => setCodigo(e.target.value)} required autoFocus />
+            <QrScanner
+              onScan={(code) => {
+                setCodigo(code);
+                setUnirseMode('code');
+                unirseQuiniela.mutate({ codigoInvitacion: code }, {
+                  onSuccess: () => { setUnirseOpen(false); setCodigo(''); showSnackbar('Te has unido a la quiniela', 'success'); },
+                });
+              }}
+              onClose={() => setUnirseMode('code')}
+            />
           </DialogContent>
-          <DialogActions sx={{ p: 2, pt: 0 }}>
-            <Button onClick={() => setUnirseOpen(false)} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
-            <Button type="submit" variant="contained" disabled={!codigo || unirseQuiniela.isPending}>
-              {unirseQuiniela.isPending ? 'Uniendo...' : 'Unirse'}
-            </Button>
-          </DialogActions>
-        </Box>
+        )}
       </Dialog>
 
       <Dialog open={!!qrQuiniela} onClose={() => setQrQuiniela(null)} maxWidth="xs" fullWidth>

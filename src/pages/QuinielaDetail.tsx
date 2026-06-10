@@ -224,19 +224,22 @@ export default function QuinielaDetail() {
   const onSubmit = (data: FormValues) => {
     const initial = initialRef.current.pronosticos;
     const pronosticosToSave = data.pronosticos
-      .filter((p, i) => {
+      .reduce<CrearPronosticosBatchRequest['pronosticos']>((acc, p, i) => {
         const init = initial[i];
-        return init && (p.golesLocalPredicho !== init.golesLocalPredicho || p.golesVisitantePredicho !== init.golesVisitantePredicho);
-      })
-      .map((p) => ({
-        idPartido: p.idPartido,
-        golesLocalPredicho: Number(p.golesLocalPredicho),
-        golesVisitantePredicho: Number(p.golesVisitantePredicho),
-      }));
+        if (!init) return acc;
+        const local = Number(p.golesLocalPredicho);
+        const visit = Number(p.golesVisitantePredicho);
+        const localInit = init.golesLocalPredicho === '' ? undefined : Number(init.golesLocalPredicho);
+        const visitInit = init.golesVisitantePredicho === '' ? undefined : Number(init.golesVisitantePredicho);
+        if (local === localInit && visit === visitInit) return acc;
+        acc.push({ idPartido: partidos[i].id, golesLocalPredicho: local, golesVisitantePredicho: visit });
+        return acc;
+      }, []);
     if (pronosticosToSave.length === 0) return;
     const payload: CrearPronosticosBatchRequest = {
       idQuiniela: quinielaId,
       pronosticos: pronosticosToSave,
+      idParticipacion: quiniela?.participacionId ?? null,
     };
     guardarPronosticos.mutate(payload, {
       onSuccess: () => { reset(data); showSnackbar('Pronósticos guardados', 'success'); },

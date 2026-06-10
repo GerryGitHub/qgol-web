@@ -105,11 +105,12 @@ export default function Pronosticos() {
     if (quinielaId === null) return;
     const payload: CrearPronosticosBatchRequest = {
       idQuiniela: quinielaId,
-      pronosticos: data.pronosticos.map((p) => ({
-        idPartido: p.idPartido,
+      pronosticos: data.pronosticos.map((p, i) => ({
+        idPartido: partidos[i].id,
         golesLocalPredicho: Number(p.golesLocalPredicho),
         golesVisitantePredicho: Number(p.golesVisitantePredicho),
       })),
+      idParticipacion: quinielaDetalle?.participacionId ?? null,
     };
     guardarPronosticos.mutate(payload, {
       onSuccess: () => showSnackbar('Pronósticos guardados', 'success'),

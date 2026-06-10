@@ -11,5 +11,6 @@ export type QuinielaDetalleDTO = {
     administrador: UsuarioDTO;
     participantes: Array<UsuarioDTO>;
     partidos: Array<PartidoDTO>;
+    participacionId?: number | null;
 };
 

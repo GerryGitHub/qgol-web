@@ -182,12 +182,6 @@ export default function QuinielaDetail() {
       .sort((a, b) => a.grupo.localeCompare(b.grupo));
   }, [partidos]);
 
-  const totalPartidos = partidos.length;
-  const pronosticosExistentes = misPronosticos?.pronosticos?.length ?? 0;
-  const pronosticosCompletados = pronosticosExistentes;
-  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
-  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
-
   const pronosticoMap = useMemo(() => {
     const map = new Map<number, PronosticoItemRequest>();
     if (misPronosticos?.pronosticos) {
@@ -213,18 +207,32 @@ export default function QuinielaDetail() {
     }),
   }), [partidos, pronosticoMap]);
 
-  const { register, handleSubmit, reset, formState: { isDirty, dirtyFields } } = useForm<FormValues>({ defaultValues });
+  const { register, handleSubmit, reset, watch, formState: { isDirty, dirtyFields } } = useForm<FormValues>({ defaultValues });
 
-  const dirtyCount = isDirty ? Object.keys(dirtyFields).length : 0;
+  const watchedPronosticos = watch('pronosticos');
+  const pronosticosCompletados = watchedPronosticos?.filter(
+    (p) => typeof p.golesLocalPredicho === 'number' && typeof p.golesVisitantePredicho === 'number'
+  ).length ?? 0;
+
+  const totalPartidos = partidos.length;
+  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
+  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
 
   const onSubmit = (data: FormValues) => {
-    const payload: CrearPronosticosBatchRequest = {
-      idQuiniela: quinielaId,
-      pronosticos: data.pronosticos.map((p) => ({
+    const pronosticosToSave = data.pronosticos
+      .filter((_, i) => {
+        const d = dirtyFields.pronosticos?.[i];
+        return d?.golesLocalPredicho || d?.golesVisitantePredicho;
+      })
+      .map((p) => ({
         idPartido: p.idPartido,
         golesLocalPredicho: Number(p.golesLocalPredicho),
         golesVisitantePredicho: Number(p.golesVisitantePredicho),
-      })),
+      }));
+    if (pronosticosToSave.length === 0) return;
+    const payload: CrearPronosticosBatchRequest = {
+      idQuiniela: quinielaId,
+      pronosticos: pronosticosToSave,
     };
     guardarPronosticos.mutate(payload, {
       onSuccess: () => { reset(data); showSnackbar('Pronósticos guardados', 'success'); },
@@ -423,7 +431,7 @@ export default function QuinielaDetail() {
               <Box sx={{ position: 'fixed', bottom: { xs: 72, md: 0 }, left: { md: 250 }, right: 0, p: 2, bgcolor: 'rgba(11, 18, 32, 0.9)', backdropFilter: 'blur(8px)', borderTop: '1px solid rgba(255,255,255,0.1)', zIndex: 10 }}>
                 <Box sx={{ maxWidth: { md: 1440 }, mx: 'auto', px: { md: 4 } }}>
                   <Button type="submit" variant="contained" fullWidth size="large" disabled={!isDirty || guardarPronosticos.isPending} sx={{ py: 1.5, fontWeight: 700, fontSize: '1rem', minHeight: 52 }}>
-                    {guardarPronosticos.isPending ? 'Guardando...' : dirtyCount > 0 ? `Guardar Pronósticos (${dirtyCount})` : 'Guardar Pronósticos'}
+                    {guardarPronosticos.isPending ? 'Guardando...' : 'Guardar Pronósticos'}
                   </Button>
                 </Box>
               </Box>

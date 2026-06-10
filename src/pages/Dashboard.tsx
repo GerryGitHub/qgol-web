@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,12 +24,15 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import ShareIcon from '@mui/icons-material/Share';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useAuthStore } from '@/store/authStore';
-import { useQuinielas, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
+import { useQuinielas, useQuinielaDetalle, useCrearQuiniela, useUnirseQuiniela } from '@/hooks/useQuinielas';
+import { shareQuiniela, copyCode } from '@/utils/shareUtils';
+import ProximoPartidoCard from '@/components/ui/ProximoPartidoCard';
 import type { QuinielaResumenDTO } from '@/types';
 import { ApiError } from '@/api/generated';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import QrScanner from '@/components/ui/QrScanner';
+import PuntosInfo from '@/components/ui/PuntosInfo';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.body?.message) return error.body.message;
@@ -43,7 +46,7 @@ function QuinielaCard({ quiniela, onShowQR }: { quiniela: QuinielaResumenDTO; on
 
   const handleCopyCode = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(quiniela.codigoInvitacion);
+    copyCode(quiniela.codigoInvitacion);
     showSnackbar('Código copiado', 'success');
   };
 
@@ -107,6 +110,16 @@ export default function Dashboard() {
   const [codigo, setCodigo] = useState('');
   const [qrQuiniela, setQrQuiniela] = useState<QuinielaResumenDTO | null>(null);
 
+  const firstQuinielaId = quinielas?.[0]?.id;
+  const { data: detalle } = useQuinielaDetalle(firstQuinielaId!);
+
+  const proximoPartido = useMemo(() => {
+    if (!detalle?.partidos) return null;
+    const pendientes = detalle.partidos.filter((p) => p.estado === 'PENDIENTE');
+    pendientes.sort((a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime());
+    return pendientes[0] ?? null;
+  }, [detalle]);
+
   return (
     <Box sx={{ pb: 12 }}>
       {usuario && (
@@ -115,9 +128,17 @@ export default function Dashboard() {
         </Typography>
       )}
 
-      <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', mb: 2.5, letterSpacing: '-0.5px' }}>
-        Mis Quinielas
-      </Typography>
+      {proximoPartido && quinielas?.[0] && (
+        <ProximoPartidoCard partido={proximoPartido} quinielaId={quinielas[0].id} quinielaNombre={quinielas[0].nombre} />
+      )}
+
+      <PuntosInfo variant="card" />
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2.5 }}>
+        <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', letterSpacing: '-0.5px' }}>
+          Mis Quinielas
+        </Typography>
+      </Box>
 
       {isLoading && <LoadingScreen />}
 
@@ -268,9 +289,7 @@ export default function Dashboard() {
             startIcon={<ShareIcon />}
             onClick={() => {
               if (!qrQuiniela) return;
-              const text = `¡Únete a mi quiniela "${qrQuiniela.nombre}" en QGol! Usa el código: ${qrQuiniela.codigoInvitacion}`;
-              if (navigator.share) navigator.share({ title: 'QGol', text });
-              else { navigator.clipboard.writeText(text); showSnackbar('Texto copiado para compartir', 'success'); }
+              shareQuiniela(qrQuiniela.nombre, qrQuiniela.codigoInvitacion);
               setQrQuiniela(null);
             }}
             sx={{ py: 1.5 }}

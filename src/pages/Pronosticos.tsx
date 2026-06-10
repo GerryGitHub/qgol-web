@@ -20,6 +20,7 @@ import type { CrearPronosticosBatchRequest, PronosticoItemRequest } from '@/type
 import FlagIcon from '@/components/ui/FlagIcon';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import EmptyState from '@/components/ui/EmptyState';
+import PuntosInfo from '@/components/ui/PuntosInfo';
 
 interface FormValues {
   pronosticos: Array<{
@@ -117,9 +118,12 @@ export default function Pronosticos() {
 
   return (
     <Box sx={{ pb: 12 }}>
-      <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', mb: 0.5, letterSpacing: '-0.5px' }}>
-        Pronósticos
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+        <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', letterSpacing: '-0.5px' }}>
+          Pronósticos
+        </Typography>
+        <PuntosInfo variant="icon" />
+      </Box>
       <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', mb: 2.5 }}>
         Selecciona una quiniela para pronosticar
       </Typography>

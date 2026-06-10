@@ -11,5 +11,6 @@ export type PronosticoDTO = {
     golesLocalPredicho: number;
     golesVisitantePredicho: number;
     puntosObtenidos: number;
+    quinielaId?: number | null;
 };
 

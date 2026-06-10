@@ -11,6 +11,11 @@ import {
   Tab,
   IconButton,
   Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  LinearProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -18,17 +23,26 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarsIcon from '@mui/icons-material/Stars';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import ShareIcon from '@mui/icons-material/Share';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useQuinielaDetalle, useMisPronosticos, useGuardarPronosticos, useLeaderboard } from '@/hooks/useQuinielas';
 import { useSnackbarStore } from '@/store/snackbarStore';
+import { shareQuiniela, copyCode } from '@/utils/shareUtils';
 import { useAuthStore } from '@/store/authStore';
 import { ApiError } from '@/api/generated';
 import type { CrearPronosticosBatchRequest, PronosticoItemRequest } from '@/types';
 import type { LeaderboardEntryDTO } from '@/api/generated';
 import FlagIcon from '@/components/ui/FlagIcon';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import PuntosInfo from '@/components/ui/PuntosInfo';
 
 interface FormValues {
-  pronosticos: PronosticoItemRequest[];
+  pronosticos: Array<{
+    idPartido: number;
+    golesLocalPredicho: number | '';
+    golesVisitantePredicho: number | '';
+  }>;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -45,11 +59,23 @@ function formatHora(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 }
 
+const medalEmojis = ['🥇', '🥈', '🥉'];
 const medalColors = ['#F59E0B', '#94A3B8', '#CD7F32'];
+
+function PuntosDiff({ current, next }: { current: number; next?: number }) {
+  if (next === undefined) return null;
+  const diff = current - next;
+  if (diff <= 0) return null;
+  return (
+    <Typography sx={{ color: '#00B86B', fontSize: '0.55rem', fontWeight: 600, mt: 0.25 }}>
+      +{diff} pts al {next > 0 ? 'siguiente' : 'último'}
+    </Typography>
+  );
+}
 
 function RankBadge({ posicion }: { posicion: number }) {
   if (posicion <= 3) {
-    return <EmojiEventsIcon sx={{ color: medalColors[posicion - 1], fontSize: 28 }} />;
+    return <Typography sx={{ fontSize: 24, lineHeight: 1 }}>{medalEmojis[posicion - 1]}</Typography>;
   }
   return (
     <Typography sx={{ width: 28, textAlign: 'center', fontWeight: 700, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>
@@ -58,7 +84,7 @@ function RankBadge({ posicion }: { posicion: number }) {
   );
 }
 
-function LeaderboardRow({ entry, isCurrentUser }: { entry: LeaderboardEntryDTO; isCurrentUser: boolean }) {
+function LeaderboardRow({ entry, nextEntry, isCurrentUser }: { entry: LeaderboardEntryDTO; nextEntry?: LeaderboardEntryDTO; isCurrentUser: boolean }) {
   return (
     <Box
       sx={{
@@ -81,6 +107,9 @@ function LeaderboardRow({ entry, isCurrentUser }: { entry: LeaderboardEntryDTO; 
           </Typography>
           {isCurrentUser && <StarsIcon sx={{ fontSize: 14, color: '#0D5BFF' }} />}
         </Box>
+        {nextEntry && (
+          <PuntosDiff current={entry.puntosTotales} next={nextEntry.puntosTotales} />
+        )}
       </Box>
       <Box sx={{ textAlign: 'right' }}>
         <Typography sx={{ fontWeight: 800, color: '#fff', fontSize: '1rem', lineHeight: 1 }}>
@@ -124,6 +153,7 @@ export default function QuinielaDetail() {
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [qrOpen, setQrOpen] = useState(false);
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
   const { data: misPronosticos } = useMisPronosticos(quinielaId);
@@ -153,6 +183,10 @@ export default function QuinielaDetail() {
   }, [partidos]);
 
   const totalPartidos = partidos.length;
+  const pronosticosExistentes = misPronosticos?.pronosticos?.length ?? 0;
+  const pronosticosCompletados = pronosticosExistentes;
+  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
+  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
 
   const pronosticoMap = useMemo(() => {
     const map = new Map<number, PronosticoItemRequest>();
@@ -168,13 +202,13 @@ export default function QuinielaDetail() {
     return map;
   }, [misPronosticos]);
 
-  const defaultValues = useMemo(() => ({
+  const defaultValues = useMemo((): FormValues => ({
     pronosticos: partidos.map((p) => {
       const existing = pronosticoMap.get(p.id);
       return {
         idPartido: p.id,
-        golesLocalPredicho: existing?.golesLocalPredicho ?? 0,
-        golesVisitantePredicho: existing?.golesVisitantePredicho ?? 0,
+        golesLocalPredicho: existing?.golesLocalPredicho ?? '',
+        golesVisitantePredicho: existing?.golesVisitantePredicho ?? '',
       };
     }),
   }), [partidos, pronosticoMap]);
@@ -231,27 +265,87 @@ export default function QuinielaDetail() {
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, flexWrap: 'wrap' }}>
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2, px: 1.5, py: 0.75, cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
-          onClick={() => { navigator.clipboard.writeText(quiniela.codigoInvitacion); showSnackbar('Código copiado', 'success'); }}>
+          onClick={() => { copyCode(quiniela.codigoInvitacion); showSnackbar('Código copiado', 'success'); }}>
           <ContentCopyIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }} />
           <Typography sx={{ fontFamily: 'monospace', color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', fontWeight: 500, letterSpacing: 0.5 }}>
             {quiniela.codigoInvitacion}
           </Typography>
         </Box>
+        <IconButton onClick={() => setQrOpen(true)} size="small" sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#0D5BFF' } }}>
+          <QrCode2Icon sx={{ fontSize: 18 }} />
+        </IconButton>
         <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem' }}>
           {totalPartidos} partidos
         </Typography>
       </Box>
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2.5, borderBottom: '1px solid rgba(255,255,255,0.1)', '& .MuiTabs-indicator': { bgcolor: '#0D5BFF' } }}>
-        <Tab label="Mis Pronósticos" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
-        <Tab label="Posiciones" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
-      </Tabs>
+      <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#fff', textAlign: 'center' }}>Invitar a la Quiniela</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', pb: 1 }}>
+          <Box sx={{ display: 'inline-flex', bgcolor: '#fff', borderRadius: 3, p: 2, mb: 2 }}>
+            <QRCodeCanvas value={quiniela.codigoInvitacion} size={220} />
+          </Box>
+          <Typography sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff', fontSize: '1.1rem', letterSpacing: 2, mb: 0.5 }}>
+            {quiniela.codigoInvitacion}
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
+            Comparte este código con tus amigos
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
+          <Button variant="contained" fullWidth startIcon={<ShareIcon />} onClick={() => { shareQuiniela(quiniela.nombre, quiniela.codigoInvitacion); setQrOpen(false); }} sx={{ py: 1.5 }}>
+            Compartir código
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ flex: 1, '& .MuiTabs-indicator': { bgcolor: '#0D5BFF' } }}>
+          <Tab label="Mis Pronósticos" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
+          <Tab label="Posiciones" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
+        </Tabs>
+        <PuntosInfo variant="icon" />
+      </Box>
 
       {tab === 0 && (
         <Box>
           {guardarPronosticos.isError && (
             <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(guardarPronosticos.error)}</Alert>
           )}
+
+          <Box sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 2, p: 1.5, mb: 2, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', fontWeight: 600 }}>
+                Pronósticos
+              </Typography>
+              <Typography sx={{ color: '#fff', fontSize: '0.7rem', fontWeight: 700 }}>
+                {pronosticosCompletados}/{totalPartidos}
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={progreso}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                bgcolor: 'rgba(255,255,255,0.08)',
+                '& .MuiLinearProgress-bar': {
+                  bgcolor: progreso === 100 ? '#00B86B' : '#0D5BFF',
+                  borderRadius: 3,
+                },
+              }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.75 }}>
+              <Typography sx={{ color: '#00B86B', fontSize: '0.6rem', fontWeight: 600 }}>
+                {pronosticosCompletados} completados
+              </Typography>
+              {pronosticosPendientes > 0 && (
+                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>
+                  {pronosticosPendientes} pendientes
+                </Typography>
+              )}
+            </Box>
+          </Box>
 
           {grupos.length === 0 && (
             <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', py: 4, textAlign: 'center' }}>
@@ -288,10 +382,10 @@ export default function QuinielaDetail() {
                             {isEditable && index >= 0 ? (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                                 <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                                  {...register(`pronosticos.${index}.golesLocalPredicho`, { valueAsNumber: true, min: 0 })} />
+                                  {...register(`pronosticos.${index}.golesLocalPredicho`)} />
                                 <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
                                 <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                                  {...register(`pronosticos.${index}.golesVisitantePredicho`, { valueAsNumber: true, min: 0 })} />
+                                  {...register(`pronosticos.${index}.golesVisitantePredicho`)} />
                               </Box>
                             ) : (
                               <Typography sx={{ fontWeight: 900, fontSize: '1rem', color: p.estado === 'FINALIZADO' ? '#fff' : 'rgba(255,255,255,0.3)', mx: 0.5, flexShrink: 0 }}>
@@ -341,14 +435,29 @@ export default function QuinielaDetail() {
       {tab === 1 && (
         <Box>
           {currentUserEntry && (
-            <Box sx={{ bgcolor: 'rgba(13,91,255,0.1)', borderRadius: 2, p: 1.5, mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <EmojiEventsIcon sx={{ color: '#0D5BFF', fontSize: 20 }} />
-              <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>
-                Tu posición: #{currentUserEntry.posicion}
-              </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', ml: 'auto' }}>
-                {currentUserEntry.puntosTotales} pts — {currentUserEntry.aciertos} aciertos
-              </Typography>
+            <Box sx={{ bgcolor: 'rgba(13,91,255,0.1)', borderRadius: 2, p: 1.5, mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <EmojiEventsIcon sx={{ color: '#0D5BFF', fontSize: 20 }} />
+                <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>
+                  Tu posición: #{currentUserEntry.posicion}
+                </Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', ml: 'auto' }}>
+                  {currentUserEntry.puntosTotales} pts — {currentUserEntry.aciertos} aciertos
+                </Typography>
+              </Box>
+              {(() => {
+                const idx = entries.indexOf(currentUserEntry);
+                const next = idx >= 0 && idx < entries.length - 1 ? entries[idx + 1] : undefined;
+                const diff = next ? currentUserEntry.puntosTotales - next.puntosTotales : undefined;
+                if (diff && diff > 0) {
+                  return (
+                    <Typography sx={{ color: '#00B86B', fontSize: '0.65rem', fontWeight: 600, mt: 0.75, textAlign: 'center' }}>
+                      {diff} pts por delante del siguiente puesto
+                    </Typography>
+                  );
+                }
+                return null;
+              })()}
             </Box>
           )}
 
@@ -364,8 +473,8 @@ export default function QuinielaDetail() {
 
           {entries.length > 0 && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {entries.map((entry) => (
-                <LeaderboardRow key={entry.usuario.id} entry={entry} isCurrentUser={entry.usuario.id === currentUser?.id} />
+              {entries.map((entry, i) => (
+                <LeaderboardRow key={entry.usuario.id} entry={entry} nextEntry={i < entries.length - 1 ? entries[i + 1] : undefined} isCurrentUser={entry.usuario.id === currentUser?.id} />
               ))}
             </Box>
           )}

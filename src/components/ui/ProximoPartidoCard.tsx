@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -207,7 +207,10 @@ export default function QuinielaDetail() {
     }),
   }), [partidos, pronosticoMap]);
 
-  const { register, handleSubmit, reset, watch, formState: { isDirty, dirtyFields } } = useForm<FormValues>({ defaultValues });
+  const { register, handleSubmit, reset, watch, formState: { isDirty } } = useForm<FormValues>({ defaultValues });
+
+  const initialRef = useRef(defaultValues);
+  initialRef.current = defaultValues;
 
   const watchedPronosticos = watch('pronosticos');
   const pronosticosCompletados = watchedPronosticos?.filter(
@@ -219,10 +222,11 @@ export default function QuinielaDetail() {
   const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
 
   const onSubmit = (data: FormValues) => {
+    const initial = initialRef.current.pronosticos;
     const pronosticosToSave = data.pronosticos
-      .filter((_, i) => {
-        const d = dirtyFields.pronosticos?.[i];
-        return d?.golesLocalPredicho || d?.golesVisitantePredicho;
+      .filter((p, i) => {
+        const init = initial[i];
+        return init && (p.golesLocalPredicho !== init.golesLocalPredicho || p.golesVisitantePredicho !== init.golesVisitantePredicho);
       })
       .map((p) => ({
         idPartido: p.idPartido,

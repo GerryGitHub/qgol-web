@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
@@ -97,19 +97,31 @@ export default function Pronosticos() {
   const { control, register, handleSubmit, reset, formState: { isDirty } } = useForm<FormValues>({ defaultValues });
   const { fields } = useFieldArray({ control, name: 'pronosticos' });
 
+  const initialRef = useRef(defaultValues);
+  initialRef.current = defaultValues;
+
   useEffect(() => {
     if (defaultValues.pronosticos.length > 0) reset(defaultValues);
   }, [defaultValues, reset]);
 
   const onSubmit = (data: FormValues) => {
     if (quinielaId === null) return;
+    const initial = initialRef.current.pronosticos;
+    const pronosticosToSave = data.pronosticos.reduce<PronosticoItemRequest[]>((acc, p, i) => {
+      const init = initial[i];
+      if (!init) return acc;
+      const local = Number(p.golesLocalPredicho);
+      const visit = Number(p.golesVisitantePredicho);
+      const localInit = init.golesLocalPredicho === '' ? undefined : Number(init.golesLocalPredicho);
+      const visitInit = init.golesVisitantePredicho === '' ? undefined : Number(init.golesVisitantePredicho);
+      if (local === localInit && visit === visitInit) return acc;
+      acc.push({ idPartido: partidos[i].id, golesLocalPredicho: local, golesVisitantePredicho: visit });
+      return acc;
+    }, []);
+    if (pronosticosToSave.length === 0) return;
     const payload: CrearPronosticosBatchRequest = {
       idQuiniela: quinielaId,
-      pronosticos: data.pronosticos.map((p, i) => ({
-        idPartido: partidos[i].id,
-        golesLocalPredicho: Number(p.golesLocalPredicho),
-        golesVisitantePredicho: Number(p.golesVisitantePredicho),
-      })),
+      pronosticos: pronosticosToSave,
       idParticipacion: quinielaDetalle?.participacionId ?? null,
     };
     guardarPronosticos.mutate(payload, {

@@ -110,12 +110,8 @@ export default function Pronosticos() {
     const pronosticosToSave = data.pronosticos.reduce<PronosticoItemRequest[]>((acc, p, i) => {
       const init = initial[i];
       if (!init) return acc;
-      const local = Number(p.golesLocalPredicho);
-      const visit = Number(p.golesVisitantePredicho);
-      const localInit = init.golesLocalPredicho === '' ? undefined : Number(init.golesLocalPredicho);
-      const visitInit = init.golesVisitantePredicho === '' ? undefined : Number(init.golesVisitantePredicho);
-      if (local === localInit && visit === visitInit) return acc;
-      acc.push({ idPartido: partidos[i].id, golesLocalPredicho: local, golesVisitantePredicho: visit });
+      if (p.golesLocalPredicho === init.golesLocalPredicho && p.golesVisitantePredicho === init.golesVisitantePredicho) return acc;
+      acc.push({ idPartido: partidos[i].id, golesLocalPredicho: Number(p.golesLocalPredicho), golesVisitantePredicho: Number(p.golesVisitantePredicho) });
       return acc;
     }, []);
     if (pronosticosToSave.length === 0) return;

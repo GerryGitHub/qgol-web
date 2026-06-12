@@ -10,7 +10,6 @@ import {
   Avatar,
 } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -18,7 +17,6 @@ import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
   { label: 'Quinielas', path: '/dashboard', icon: <EmojiEventsIcon /> },
-  { label: 'Pronósticos', path: '/pronosticos', icon: <SportsSoccerIcon /> },
   { label: 'Grupos', path: '/grupos', icon: <GroupsIcon /> },
   { label: 'Resultados', path: '/resultados', icon: <TableChartIcon /> },
 ];

@@ -52,7 +52,7 @@ export type { VerifyRegistrationOtpRequest } from './models/VerifyRegistrationOt
 
 export { AdministraciNService } from './services/AdministraciNService';
 export { AutenticaciNService } from './services/AutenticaciNService';
-export { GruposFifaService } from './services/GruposFifaService';
+export { GruposService } from './services/GruposFifaService';
 export { PartidosService } from './services/PartidosService';
 export { PronSticosService } from './services/PronSticosService';
 export { QuinielasService } from './services/QuinielasService';

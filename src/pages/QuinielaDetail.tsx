@@ -152,7 +152,7 @@ export default function QuinielaDetail() {
   const showSnackbar = useSnackbarStore((s) => s.show);
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
@@ -178,7 +178,12 @@ export default function QuinielaDetail() {
       });
     }
     return Array.from(map.entries())
-      .map(([grupo, partidos]) => ({ grupo, partidos }))
+      .map(([grupo, partidos]) => ({
+        grupo,
+        partidos: [...partidos].sort(
+          (a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime()
+        ),
+      }))
       .sort((a, b) => a.grupo.localeCompare(b.grupo));
   }, [partidos]);
 
@@ -243,12 +248,7 @@ export default function QuinielaDetail() {
   };
 
   const toggleGroup = (grupo: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(grupo)) next.delete(grupo);
-      else next.add(grupo);
-      return next;
-    });
+    setExpandedGroup((prev) => (prev === grupo ? null : grupo));
   };
 
   if (isLoading) return <LoadingScreen />;
@@ -369,13 +369,13 @@ export default function QuinielaDetail() {
               <Box key={g.grupo} sx={{ mb: 2 }}>
                 <Box
                   onClick={() => toggleGroup(g.grupo)}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: expandedGroups.has(g.grupo) ? 1.5 : 0 }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: expandedGroup === g.grupo ? 1.5 : 0 }}
                 >
-                  {expandedGroups.has(g.grupo) ? <KeyboardArrowUpIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} /> : <KeyboardArrowDownIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />}
+                  {expandedGroup === g.grupo ? <KeyboardArrowUpIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} /> : <KeyboardArrowDownIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />}
                   <Typography sx={{ fontWeight: 800, color: '#0D5BFF', fontSize: '1rem' }}>Grupo {g.grupo}</Typography>
                 </Box>
 
-                {expandedGroups.has(g.grupo) && (
+                {expandedGroup === g.grupo && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     {g.partidos.map((p) => {
                       const index = partidos.findIndex((pt) => pt.id === p.id);

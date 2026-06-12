@@ -36,7 +36,7 @@ export default function Grupos() {
   return (
     <Box>
       <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', mb: 2.5, letterSpacing: '-0.5px' }}>
-        Grupos FIFA
+        Grupos
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

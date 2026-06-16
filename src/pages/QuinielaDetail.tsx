@@ -289,46 +289,9 @@ export default function QuinielaDetail() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <IconButton onClick={() => window.history.back()} sx={{ color: 'rgba(255,255,255,0.6)' }}><ArrowBackIcon /></IconButton>
         <Alert severity="error" sx={{ flex: 1, borderRadius: 2 }}>Error al cargar la quiniela</Alert>
-      <Dialog open={!!selectedUserId} onClose={() => setSelectedUserId(null)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ width: 28, height: 28, bgcolor: '#0D5BFF', fontSize: '0.7rem' }}>
-            {selectedUser?.usuario.nombre.charAt(0).toUpperCase()}
-          </Avatar>
-          {selectedUser?.usuario.nombre}
-          {selectedUser && (
-            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', ml: 'auto' }}>
-              {selectedUser.puntosTotales} pts
-            </Typography>
-          )}
-        </DialogTitle>
-        <DialogContent>
-          {loadingUserPronos && (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Cargando pronósticos...</Typography>
-            </Box>
-          )}
-          {!loadingUserPronos && (!userPronosticos?.pronosticos || userPronosticos.pronosticos.length === 0) && (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Sin pronósticos disponibles</Typography>
-            </Box>
-          )}
-          {!loadingUserPronos && userPronosticos?.pronosticos && userPronosticos.pronosticos.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {userPronosticos.pronosticos
-                .sort((a, b) => new Date(a.partido.fechaHora).getTime() - new Date(b.partido.fechaHora).getTime())
-                .map((pr) => <PronosticoCard key={pr.id} pronostico={pr} />)}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-          <Button onClick={() => setSelectedUserId(null)} variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.2)' }}>
-            Cerrar
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
-}
+  }
 
   return (
     <Box sx={{ pb: 12 }}>
@@ -556,6 +519,44 @@ export default function QuinielaDetail() {
           )}
         </Box>
       )}
+
+      <Dialog open={!!selectedUserId} onClose={() => setSelectedUserId(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ width: 28, height: 28, bgcolor: '#0D5BFF', fontSize: '0.7rem' }}>
+            {selectedUser?.usuario.nombre.charAt(0).toUpperCase()}
+          </Avatar>
+          {selectedUser?.usuario.nombre}
+          {selectedUser && (
+            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', ml: 'auto' }}>
+              {selectedUser.puntosTotales} pts
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent>
+          {loadingUserPronos && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Cargando pronósticos...</Typography>
+            </Box>
+          )}
+          {!loadingUserPronos && (!userPronosticos?.pronosticos || userPronosticos.pronosticos.length === 0) && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Sin pronósticos disponibles</Typography>
+            </Box>
+          )}
+          {!loadingUserPronos && userPronosticos?.pronosticos && userPronosticos.pronosticos.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {userPronosticos.pronosticos
+                .sort((a, b) => new Date(a.partido.fechaHora).getTime() - new Date(b.partido.fechaHora).getTime())
+                .map((pr) => <PronosticoCard key={pr.id} pronostico={pr} />)}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button onClick={() => setSelectedUserId(null)} variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.2)' }}>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

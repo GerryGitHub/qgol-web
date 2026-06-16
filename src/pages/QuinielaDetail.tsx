@@ -186,7 +186,9 @@ export default function QuinielaDetail() {
   const { data: misPronosticos } = useMisPronosticos(quinielaId);
   const { data: leaderboard } = useLeaderboard(quinielaId);
   const { data: userPronosticos, isLoading: loadingUserPronos } = usePronosticosDeUsuario(quinielaId, selectedUserId);
+  const entries = leaderboard ? [...leaderboard].sort((a, b) => a.posicion - b.posicion) : [];
   const selectedUser = selectedUserId ? entries.find((e) => e.usuario.id === selectedUserId) : null;
+  const currentUserEntry = entries.find((e) => e.usuario.id === currentUser?.id);
   const guardarPronosticos = useGuardarPronosticos();
 
   const partidos = quiniela?.partidos ?? [];
@@ -327,9 +329,6 @@ export default function QuinielaDetail() {
     </Box>
   );
 }
-
-  const entries = leaderboard ? [...leaderboard].sort((a, b) => a.posicion - b.posicion) : [];
-  const currentUserEntry = entries.find((e) => e.usuario.id === currentUser?.id);
 
   return (
     <Box sx={{ pb: 12 }}>

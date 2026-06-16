@@ -11,7 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const rules = [
   { icon: '🏆', label: 'Marcador exacto', points: 10 },
   { icon: '⚽', label: 'Diferencia de goles correcta', points: 5 },
-  { icon: '✅', label: 'Resultado correcto', points: 3 },
+  { icon: '✅', label: 'Ganador', points: 3 },
   { icon: '❌', label: 'Resultado incorrecto', points: 0 },
 ];
 

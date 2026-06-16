@@ -62,6 +62,27 @@ export class PronSticosService {
         });
     }
     /**
+     * Ver los pronÃ³sticos de un usuario en una quiniela
+     * Solo incluye partidos que ya comenzaron
+     * @param quinielaId
+     * @param usuarioId
+     * @returns MisPronosticosDTO OK
+     * @throws ApiError
+     */
+    public static getPronosticosDeUsuario(
+        quinielaId: number,
+        usuarioId: number,
+    ): CancelablePromise<MisPronosticosDTO> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/pronosticos/quiniela/{quinielaId}/usuario/{usuarioId}',
+            path: {
+                'quinielaId': quinielaId,
+                'usuarioId': usuarioId,
+            },
+        });
+    }
+    /**
      * Ver todos los pronÃ³sticos de un partido
      * Solo disponible despuÃ©s de que el partido comience
      * @param quinielaId

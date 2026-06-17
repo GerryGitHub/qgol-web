@@ -129,19 +129,25 @@ function PronosticoCard({ pronostico }: { pronostico: PronosticoDTO }) {
   const p = pronostico.partido;
   const color = p.estado === 'FINALIZADO' ? 'rgba(255,255,255,0.35)' : p.estado === 'EN_CURSO' ? '#FF4D4D' : '#00B86B';
   return (
-    <Box sx={{ bgcolor: 'rgba(11,18,32,0.3)', borderRadius: 3, p: 1.5, border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.75 }}>
-        <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', flex: 1, textAlign: 'right', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
-        <Typography sx={{ fontWeight: 900, fontSize: '0.9rem', color: '#fff', mx: 0.5 }}>
+    <Box sx={{ bgcolor: 'rgba(11,18,32,0.3)', borderRadius: 2, p: 1, border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end', minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.65rem', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
+          <FlagIcon country={p.equipoLocal} size={12} />
+        </Box>
+        <Typography sx={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', mx: 0.25, flexShrink: 0 }}>
           {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
         </Typography>
-        <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', flex: 1, textAlign: 'left', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-start', minWidth: 0 }}>
+          <FlagIcon country={p.equipoVisitante} size={12} />
+          <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.65rem', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
+        </Box>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.6rem' }}>
-          Pronosticó: {pronostico.golesLocalPredicho} — {pronostico.golesVisitantePredicho}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mt: 0.5 }}>
+        <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.55rem' }}>
+          Pronóstico: {pronostico.golesLocalPredicho} — {pronostico.golesVisitantePredicho}
         </Typography>
-        <Typography sx={{ color, fontWeight: 700, fontSize: '0.7rem' }}>
+        <Typography sx={{ color, fontWeight: 700, fontSize: '0.65rem' }}>
           {pronostico.puntosObtenidos} pts
         </Typography>
       </Box>
@@ -544,7 +550,7 @@ export default function QuinielaDetail() {
             </Box>
           )}
           {!loadingUserPronos && userPronosticos?.pronosticos && userPronosticos.pronosticos.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {userPronosticos.pronosticos
                 .sort((a, b) => new Date(a.partido.fechaHora).getTime() - new Date(b.partido.fechaHora).getTime())
                 .map((pr) => <PronosticoCard key={pr.id} pronostico={pr} />)}

@@ -526,7 +526,7 @@ export default function QuinielaDetail() {
         </Box>
       )}
 
-      <Dialog open={!!selectedUserId} onClose={() => setSelectedUserId(null)} maxWidth="sm" fullWidth>
+      <Dialog open={!!selectedUserId} onClose={() => setSelectedUserId(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 1 }}>
           <Avatar sx={{ width: 28, height: 28, bgcolor: '#0D5BFF', fontSize: '0.7rem' }}>
             {selectedUser?.usuario.nombre.charAt(0).toUpperCase()}
@@ -538,7 +538,7 @@ export default function QuinielaDetail() {
             </Typography>
           )}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ px: { xs: 1.5, sm: 3 } }}>
           {loadingUserPronos && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Cargando pronósticos...</Typography>

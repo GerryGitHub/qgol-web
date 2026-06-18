@@ -95,7 +95,7 @@ export default function Eliminatorias() {
         <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.3rem', letterSpacing: '-0.5px', flex: 1 }}>
           Eliminatorias
         </Typography>
-        {isAdmin && preview?.gruposActivos && (
+        {isAdmin && status && !status.rondaActual && status.quinielaGrupos && (
           <Button
             variant="contained"
             size="small"

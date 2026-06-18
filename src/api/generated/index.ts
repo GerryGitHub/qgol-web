@@ -13,6 +13,8 @@ export type { SlotOrigenDTO } from './models/SlotOrigenDTO';
 export type { EliminatoriasStatusDTO } from './models/EliminatoriasStatusDTO';
 export type { CrearEliminatoriasRequest } from './models/CrearEliminatoriasRequest';
 export type { CrearEliminatoriasResponse } from './models/CrearEliminatoriasResponse';
+export type { EquipoEstadisticasDTO } from './models/EquipoEstadisticasDTO';
+export type { UpdateEstadisticasRequest } from './models/UpdateEstadisticasRequest';
 export type { ActualizarPartidoRequest } from './models/ActualizarPartidoRequest';
 export type { ActualizarResultadoRequest } from './models/ActualizarResultadoRequest';
 export type { AdminActivityDTO } from './models/AdminActivityDTO';

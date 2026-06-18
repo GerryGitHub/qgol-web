@@ -8,6 +8,8 @@ import type { AdminQuinielaListDTO } from '../models/AdminQuinielaListDTO';
 import type { AdminSystemDTO } from '../models/AdminSystemDTO';
 import type { AdminUserDetailDTO } from '../models/AdminUserDetailDTO';
 import type { AdminUserListDTO } from '../models/AdminUserListDTO';
+import type { EquipoEstadisticasDTO } from '../models/EquipoEstadisticasDTO';
+import type { UpdateEstadisticasRequest } from '../models/UpdateEstadisticasRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -127,6 +129,39 @@ export class AdministraciNService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/admin/activity',
+        });
+    }
+    /**
+     * EstadÃ­sticas de equipos
+     * Lista todos los equipos con ranking FIFA y fair play
+     * @returns EquipoEstadisticasDTO OK
+     * @throws ApiError
+     */
+    public static getEquiposEstadisticas(): CancelablePromise<Array<EquipoEstadisticasDTO>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin/equipos-estadisticas',
+        });
+    }
+    /**
+     * Actualizar estadÃ­sticas
+     * Actualiza ranking FIFA y fair play de un equipo
+     * @param id
+     * @param request
+     * @returns EquipoEstadisticasDTO OK
+     * @throws ApiError
+     */
+    public static updateEstadisticas(
+        id: number,
+        request: UpdateEstadisticasRequest,
+    ): CancelablePromise<EquipoEstadisticasDTO> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/admin/equipos/{id}/estadisticas',
+            path: {
+                'id': id,
+            },
+            body: request,
         });
     }
 }

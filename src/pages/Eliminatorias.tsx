@@ -15,16 +15,24 @@ const rondaLabels: Record<string, string> = {
 };
 
 function BracketMatch({ codigo, equipoLocal, equipoVisitante, resuelto }: { codigo: string; equipoLocal: string | null; equipoVisitante: string | null; resuelto: boolean }) {
+  const displayName = (name: string | null) => {
+    if (!name) return null;
+    const m = name.match(/^([WL])(\d+)$/);
+    if (m) return m[1] === 'W' ? `Ganador P${m[2]}` : `Perdedor P${m[2]}`;
+    return name;
+  };
+  const localDisplay = displayName(equipoLocal);
+  const visitanteDisplay = displayName(equipoVisitante);
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, opacity: resuelto ? 1 : 0.45 }}>
       <Typography sx={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 600, minWidth: 28, textAlign: 'right', fontFamily: 'monospace' }}>
         {codigo}
       </Typography>
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end', minWidth: 0 }}>
-        {equipoLocal ? (
+        {localDisplay ? (
           <>
-            <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.7rem', textAlign: 'right', wordBreak: 'break-word' }}>{equipoLocal}</Typography>
-            <FlagIcon country={equipoLocal} size={12} />
+            <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.7rem', textAlign: 'right', wordBreak: 'break-word' }}>{localDisplay}</Typography>
+            {equipoLocal && !equipoLocal.startsWith('W') && !equipoLocal.startsWith('L') && <FlagIcon country={equipoLocal} size={12} />}
           </>
         ) : (
           <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontStyle: 'italic' }}>Por definir</Typography>
@@ -32,10 +40,10 @@ function BracketMatch({ codigo, equipoLocal, equipoVisitante, resuelto }: { codi
       </Box>
       <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', mx: 0.5 }}>vs</Typography>
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-start', minWidth: 0 }}>
-        {equipoVisitante ? (
+        {visitanteDisplay ? (
           <>
-            <FlagIcon country={equipoVisitante} size={12} />
-            <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.7rem', textAlign: 'left', wordBreak: 'break-word' }}>{equipoVisitante}</Typography>
+            {equipoVisitante && !equipoVisitante.startsWith('W') && !equipoVisitante.startsWith('L') && <FlagIcon country={equipoVisitante} size={12} />}
+            <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.7rem', textAlign: 'left', wordBreak: 'break-word' }}>{visitanteDisplay}</Typography>
           </>
         ) : (
           <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontStyle: 'italic' }}>Por definir</Typography>

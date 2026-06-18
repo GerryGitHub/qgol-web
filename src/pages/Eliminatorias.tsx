@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
+import { Box, Typography, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
 import { useEliminatoriasPreview, useEliminatoriasStatus, useCrearEliminatorias } from '@/hooks/useEliminatorias';
-import { useEquiposEstadisticas, useUpdateEstadisticas } from '@/hooks/useEliminatorias';
 import { useAuthStore } from '@/store/authStore';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -64,45 +61,6 @@ export default function Eliminatorias() {
   const crearEliminatorias = useCrearEliminatorias();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
-
-  const { data: equipos, isLoading: loadingEquipos } = useEquiposEstadisticas();
-  const updateEstadisticas = useUpdateEstadisticas();
-
-  const [editValues, setEditValues] = useState<Record<number, { rankingFifa: string; puntosFairPlay: string }>>({});
-  const [saving, setSaving] = useState<Record<number, boolean>>({});
-
-  const initEditValues = (equipos: { equipoId: number; rankingFifa: number | null; puntosFairPlay: number }[]) => {
-    const vals: Record<number, { rankingFifa: string; puntosFairPlay: string }> = {};
-    equipos.forEach((e) => {
-      vals[e.equipoId] = { rankingFifa: e.rankingFifa?.toString() ?? '', puntosFairPlay: e.puntosFairPlay.toString() };
-    });
-    setEditValues(vals);
-  };
-
-  const handleStatsOpen = () => {
-    setStatsOpen(true);
-    if (equipos) initEditValues(equipos);
-  };
-
-  const handleSave = (equipoId: number) => {
-    const vals = editValues[equipoId];
-    if (!vals) return;
-    setSaving((prev) => ({ ...prev, [equipoId]: true }));
-    updateEstadisticas.mutate(
-      { equipoId, rankingFifa: vals.rankingFifa ? parseInt(vals.rankingFifa, 10) : null, puntosFairPlay: vals.puntosFairPlay ? parseInt(vals.puntosFairPlay, 10) : 0 },
-      {
-        onSuccess: () => {
-          showSnackbar('Estadísticas guardadas', 'success');
-          setSaving((prev) => ({ ...prev, [equipoId]: false }));
-        },
-        onError: () => {
-          showSnackbar('Error al guardar', 'error');
-          setSaving((prev) => ({ ...prev, [equipoId]: false }));
-        },
-      },
-    );
-  };
 
   if (loadingPreview) return <LoadingScreen />;
 
@@ -146,17 +104,6 @@ export default function Eliminatorias() {
             sx={{ fontWeight: 700, fontSize: '0.7rem', py: 0.75, px: 1.5 }}
           >
             Generar Eliminatorias
-          </Button>
-        )}
-        {isAdmin && (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<EditIcon />}
-            onClick={handleStatsOpen}
-            sx={{ fontWeight: 700, fontSize: '0.7rem', py: 0.75, px: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}
-          >
-            Estadísticas
           </Button>
         )}
       </Box>
@@ -221,72 +168,6 @@ export default function Eliminatorias() {
           </Button>
           <Button onClick={handleCrear} variant="contained" disabled={crearEliminatorias.isPending}>
             {crearEliminatorias.isPending ? 'Generando...' : 'Generar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={statsOpen} onClose={() => setStatsOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#fff' }}>Estadísticas de Equipos</DialogTitle>
-        <DialogContent>
-          {loadingEquipos ? (
-            <LoadingScreen />
-          ) : (
-            <TableContainer component={Paper} sx={{ bgcolor: 'rgba(11,18,32,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 2, mt: 1 }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '0.65rem' }}>Equipo</TableCell>
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '0.65rem' }}>Grupo</TableCell>
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '0.65rem' }}>Ranking FIFA</TableCell>
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '0.65rem' }}>Puntos Fair Play</TableCell>
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: '0.65rem' }}></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {equipos?.map((eq) => (
-                    <TableRow key={eq.equipoId}>
-                      <TableCell sx={{ color: '#fff', fontSize: '0.75rem', fontWeight: 600 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <FlagIcon country={eq.nombre} size={14} />
-                          {eq.nombre}
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem' }}>{eq.grupo || '-'}</TableCell>
-                      <TableCell>
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={editValues[eq.equipoId]?.rankingFifa ?? ''}
-                          onChange={(e) => setEditValues((prev) => ({ ...prev, [eq.equipoId]: { ...prev[eq.equipoId], rankingFifa: e.target.value } }))}
-                          sx={{ input: { color: '#fff', fontSize: '0.75rem', py: 0.5 }, '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 } }}
-                          slotProps={{ htmlInput: { min: 0, max: 3000 } }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={editValues[eq.equipoId]?.puntosFairPlay ?? 0}
-                          onChange={(e) => setEditValues((prev) => ({ ...prev, [eq.equipoId]: { ...prev[eq.equipoId], puntosFairPlay: e.target.value } }))}
-                          sx={{ input: { color: '#fff', fontSize: '0.75rem', py: 0.5 }, '& .MuiOutlinedInput-root': { bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 } }}
-                          slotProps={{ htmlInput: { min: -50, max: 50 } }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <IconButton size="small" onClick={() => handleSave(eq.equipoId)} disabled={saving[eq.equipoId]} sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                          <SaveIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'flex-end', pb: 2, px: 3 }}>
-          <Button onClick={() => setStatsOpen(false)} variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.2)' }}>
-            Cerrar
           </Button>
         </DialogActions>
       </Dialog>

@@ -7,6 +7,12 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { BracketPreviewDTO } from './models/BracketPreviewDTO';
+export type { BracketSlotPreviewDTO } from './models/BracketSlotPreviewDTO';
+export type { SlotOrigenDTO } from './models/SlotOrigenDTO';
+export type { EliminatoriasStatusDTO } from './models/EliminatoriasStatusDTO';
+export type { CrearEliminatoriasRequest } from './models/CrearEliminatoriasRequest';
+export type { CrearEliminatoriasResponse } from './models/CrearEliminatoriasResponse';
 export type { ActualizarPartidoRequest } from './models/ActualizarPartidoRequest';
 export type { ActualizarResultadoRequest } from './models/ActualizarResultadoRequest';
 export type { AdminActivityDTO } from './models/AdminActivityDTO';
@@ -51,6 +57,7 @@ export type { UsuarioPerfilDTO } from './models/UsuarioPerfilDTO';
 export type { VerifyRegistrationOtpRequest } from './models/VerifyRegistrationOtpRequest';
 
 export { AdministraciNService } from './services/AdministraciNService';
+export { EliminatoriasService } from './services/EliminatoriasService';
 export { AutenticaciNService } from './services/AutenticaciNService';
 export { GruposService } from './services/GruposFifaService';
 export { PartidosService } from './services/PartidosService';

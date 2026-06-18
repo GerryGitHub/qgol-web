@@ -12,11 +12,13 @@ import {
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
   { label: 'Quinielas', path: '/dashboard', icon: <EmojiEventsIcon /> },
+  { label: 'Eliminatorias', path: '/eliminatorias', icon: <AccountTreeIcon /> },
   { label: 'Grupos', path: '/grupos', icon: <GroupsIcon /> },
   { label: 'Resultados', path: '/resultados', icon: <TableChartIcon /> },
 ];

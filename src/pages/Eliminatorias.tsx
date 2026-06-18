@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useEliminatoriasPreview, useEliminatoriasStatus, useCrearEliminatorias } from '@/hooks/useEliminatorias';
@@ -8,16 +8,6 @@ import { useAuthStore } from '@/store/authStore';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import FlagIcon from '@/components/ui/FlagIcon';
-
-const rondaLabels: Record<string, string> = {
-  R32: 'Dieciseisavos', R16: 'Octavos', QF: 'Cuartos',
-  SF: 'Semifinales', '3RD': 'Tercer Lugar', FINAL: 'Final',
-};
-
-const rondaColors: Record<string, string> = {
-  R32: '#4A90D9', R16: '#50C878', QF: '#F5A623',
-  SF: '#9B59B6', '3RD': '#E74C3C', FINAL: '#F1C40F',
-};
 
 function BracketMatch({ codigo, equipoLocal, equipoVisitante, resuelto }: { codigo: string; equipoLocal: string | null; equipoVisitante: string | null; resuelto: boolean }) {
   return (
@@ -126,16 +116,8 @@ export default function Eliminatorias() {
 
       {rondasDisponibles.map((ronda) => {
         const partidos = preview?.rondas[ronda] ?? [];
-        const resueltos = partidos.filter((p) => p.resuelto).length;
         return (
-          <Box key={ronda} sx={{ mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Chip label={rondaLabels[ronda] || ronda} size="small"
-                sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: `${rondaColors[ronda]}20`, color: rondaColors[ronda], border: `1px solid ${rondaColors[ronda]}40` }} />
-              <Typography sx={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-                {resueltos}/{partidos.length} definidos
-              </Typography>
-            </Box>
+          <Box key={ronda} sx={{ mb: 2 }}>
             <Box sx={{ bgcolor: 'rgba(11,18,32,0.3)', borderRadius: 3, p: 1.5, border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' }}>
               {[...partidos].sort((a, b) => a.orden - b.orden).map((p) => (
                 <BracketMatch key={p.codigo} {...p} />

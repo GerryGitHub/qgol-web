@@ -9,6 +9,11 @@ import { useSnackbarStore } from '@/store/snackbarStore';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import FlagIcon from '@/components/ui/FlagIcon';
 
+const rondaLabels: Record<string, string> = {
+  R32: 'Dieciseisavos', R16: 'Octavos', QF: 'Cuartos',
+  SF: 'Semifinales', '3RD': 'Tercer Lugar', FINAL: 'Final',
+};
+
 function BracketMatch({ codigo, equipoLocal, equipoVisitante, resuelto }: { codigo: string; equipoLocal: string | null; equipoVisitante: string | null; resuelto: boolean }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, opacity: resuelto ? 1 : 0.45 }}>

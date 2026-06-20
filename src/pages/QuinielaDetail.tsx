@@ -550,7 +550,7 @@ export default function QuinielaDetail() {
             </Box>
           )}
           {!loadingUserPronos && userPronosticos?.pronosticos && userPronosticos.pronosticos.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
               {userPronosticos.pronosticos
                 .sort((a, b) => new Date(a.partido.fechaHora).getTime() - new Date(b.partido.fechaHora).getTime())
                 .map((pr) => <PronosticoCard key={pr.id} pronostico={pr} />)}

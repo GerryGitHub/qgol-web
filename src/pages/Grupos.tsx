@@ -39,7 +39,7 @@ export default function Grupos() {
         Grupos
       </Typography>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
         {grupos.map((g) => {
           const sorted = sortSelecciones(g.selecciones);
           return (

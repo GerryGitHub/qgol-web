@@ -6,5 +6,6 @@ import type { PronosticoItemRequest } from './PronosticoItemRequest';
 export type CrearPronosticosBatchRequest = {
     idQuiniela: number;
     pronosticos: Array<PronosticoItemRequest>;
+    idParticipacion?: number | null;
 };
 

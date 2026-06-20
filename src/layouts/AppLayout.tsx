@@ -15,10 +15,12 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import Sidebar from '@/components/layout/Sidebar';
 
 const navItems = [
   { label: 'Quinielas', path: '/dashboard', icon: <EmojiEventsIcon /> },
+  { label: 'Eliminatorias', path: '/eliminatorias', icon: <AccountTreeIcon /> },
   { label: 'Pronósticos', path: '/pronosticos', icon: <SportsSoccerIcon /> },
   { label: 'Grupos', path: '/grupos', icon: <GroupsIcon /> },
   { label: 'Resultados', path: '/resultados', icon: <TableChartIcon /> },

@@ -11,7 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const rules = [
   { icon: '🏆', label: 'Marcador exacto', points: 10 },
   { icon: '⚽', label: 'Diferencia de goles correcta', points: 5 },
-  { icon: '✅', label: 'Resultado correcto', points: 3 },
+  { icon: '✅', label: 'Ganador', points: 3 },
   { icon: '❌', label: 'Resultado incorrecto', points: 0 },
 ];
 
@@ -67,13 +67,15 @@ export default function PuntosInfo({ variant = 'card' }: Props) {
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth
-        PaperProps={{
-          sx: {
-            bgcolor: 'rgba(11,18,32,0.92)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: 4,
-            border: '1px solid rgba(255,255,255,0.1)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: 'rgba(11,18,32,0.92)',
+              backdropFilter: 'blur(16px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            },
           },
         }}
       >

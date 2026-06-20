@@ -12,6 +12,7 @@ import QuinielaDetail from '@/pages/QuinielaDetail';
 import Pronosticos from '@/pages/Pronosticos';
 import Grupos from '@/pages/Grupos';
 import Resultados from '@/pages/Resultados';
+import Eliminatorias from '@/pages/Eliminatorias';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -62,6 +63,7 @@ export default function AppRouter() {
           <Route path="pronosticos" element={<Pronosticos />} />
           <Route path="grupos" element={<Grupos />} />
           <Route path="resultados" element={<Resultados />} />
+          <Route path="eliminatorias" element={<Eliminatorias />} />
           <Route path="quiniela/:id" element={<QuinielaDetail />} />
         </Route>
 

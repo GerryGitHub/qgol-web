@@ -36,10 +36,10 @@ export default function Grupos() {
   return (
     <Box>
       <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.5rem', mb: 2.5, letterSpacing: '-0.5px' }}>
-        Grupos FIFA
+        Grupos
       </Typography>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
         {grupos.map((g) => {
           const sorted = sortSelecciones(g.selecciones);
           return (

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -26,13 +26,13 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import ShareIcon from '@mui/icons-material/Share';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useQuinielaDetalle, useMisPronosticos, useGuardarPronosticos, useLeaderboard } from '@/hooks/useQuinielas';
+import { useQuinielaDetalle, useMisPronosticos, useGuardarPronosticos, useLeaderboard, usePronosticosDeUsuario } from '@/hooks/useQuinielas';
 import { useSnackbarStore } from '@/store/snackbarStore';
 import { shareQuiniela, copyCode } from '@/utils/shareUtils';
 import { useAuthStore } from '@/store/authStore';
 import { ApiError } from '@/api/generated';
 import type { CrearPronosticosBatchRequest, PronosticoItemRequest } from '@/types';
-import type { LeaderboardEntryDTO } from '@/api/generated';
+import type { LeaderboardEntryDTO, PronosticoDTO } from '@/api/generated';
 import FlagIcon from '@/components/ui/FlagIcon';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import PuntosInfo from '@/components/ui/PuntosInfo';
@@ -84,16 +84,18 @@ function RankBadge({ posicion }: { posicion: number }) {
   );
 }
 
-function LeaderboardRow({ entry, nextEntry, isCurrentUser }: { entry: LeaderboardEntryDTO; nextEntry?: LeaderboardEntryDTO; isCurrentUser: boolean }) {
+function LeaderboardRow({ entry, nextEntry, isCurrentUser, onClick }: { entry: LeaderboardEntryDTO; nextEntry?: LeaderboardEntryDTO; isCurrentUser: boolean; onClick: () => void }) {
   return (
     <Box
+      onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 2, p: 2,
+        display: 'flex', alignItems: 'center', gap: 2, p: 2, cursor: 'pointer',
         bgcolor: isCurrentUser ? 'rgba(13,91,255,0.08)' : 'rgba(11,18,32,0.3)',
         borderRadius: 3,
         border: isCurrentUser ? '1.5px solid' : '1px solid',
         borderColor: isCurrentUser ? '#0D5BFF' : entry.posicion <= 3 ? medalColors[entry.posicion - 1] : 'rgba(255,255,255,0.15)',
         backdropFilter: 'blur(4px)',
+        '&:hover': { bgcolor: isCurrentUser ? 'rgba(13,91,255,0.12)' : 'rgba(11,18,32,0.5)' },
       }}
     >
       <RankBadge posicion={entry.posicion} />
@@ -117,6 +119,36 @@ function LeaderboardRow({ entry, nextEntry, isCurrentUser }: { entry: Leaderboar
         </Typography>
         <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: 1 }}>
           {entry.aciertos} hit
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+function PronosticoCard({ pronostico }: { pronostico: PronosticoDTO }) {
+  const p = pronostico.partido;
+  const color = p.estado === 'FINALIZADO' ? 'rgba(255,255,255,0.35)' : p.estado === 'EN_CURSO' ? '#FF4D4D' : '#00B86B';
+  return (
+    <Box sx={{ bgcolor: 'rgba(11,18,32,0.3)', borderRadius: 2, p: 1, border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-end', minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.65rem', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
+          <FlagIcon country={p.equipoLocal} size={12} />
+        </Box>
+        <Typography sx={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', mx: 0.25, flexShrink: 0 }}>
+          {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
+        </Typography>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'flex-start', minWidth: 0 }}>
+          <FlagIcon country={p.equipoVisitante} size={12} />
+          <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.65rem', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mt: 0.5 }}>
+        <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.55rem' }}>
+          Pronóstico: {pronostico.golesLocalPredicho} — {pronostico.golesVisitantePredicho}
+        </Typography>
+        <Typography sx={{ color, fontWeight: 700, fontSize: '0.65rem' }}>
+          {pronostico.puntosObtenidos} pts
         </Typography>
       </Box>
     </Box>
@@ -152,12 +184,17 @@ export default function QuinielaDetail() {
   const showSnackbar = useSnackbarStore((s) => s.show);
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
   const { data: misPronosticos } = useMisPronosticos(quinielaId);
   const { data: leaderboard } = useLeaderboard(quinielaId);
+  const { data: userPronosticos, isLoading: loadingUserPronos } = usePronosticosDeUsuario(quinielaId, selectedUserId);
+  const entries = leaderboard ? [...leaderboard].sort((a, b) => a.posicion - b.posicion) : [];
+  const selectedUser = selectedUserId ? entries.find((e) => e.usuario.id === selectedUserId) : null;
+  const currentUserEntry = entries.find((e) => e.usuario.id === currentUser?.id);
   const guardarPronosticos = useGuardarPronosticos();
 
   const partidos = quiniela?.partidos ?? [];
@@ -178,15 +215,14 @@ export default function QuinielaDetail() {
       });
     }
     return Array.from(map.entries())
-      .map(([grupo, partidos]) => ({ grupo, partidos }))
+      .map(([grupo, partidos]) => ({
+        grupo,
+        partidos: [...partidos].sort(
+          (a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime()
+        ),
+      }))
       .sort((a, b) => a.grupo.localeCompare(b.grupo));
   }, [partidos]);
-
-  const totalPartidos = partidos.length;
-  const pronosticosExistentes = misPronosticos?.pronosticos?.length ?? 0;
-  const pronosticosCompletados = pronosticosExistentes;
-  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
-  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
 
   const pronosticoMap = useMemo(() => {
     const map = new Map<number, PronosticoItemRequest>();
@@ -213,18 +249,35 @@ export default function QuinielaDetail() {
     }),
   }), [partidos, pronosticoMap]);
 
-  const { register, handleSubmit, reset, formState: { isDirty, dirtyFields } } = useForm<FormValues>({ defaultValues });
+  const { register, handleSubmit, reset, watch, formState: { isDirty } } = useForm<FormValues>({ defaultValues });
 
-  const dirtyCount = isDirty ? Object.keys(dirtyFields).length : 0;
+  const initialRef = useRef(defaultValues);
+  initialRef.current = defaultValues;
+
+  const watchedPronosticos = watch('pronosticos');
+  const pronosticosCompletados = watchedPronosticos?.filter(
+    (p) => typeof p.golesLocalPredicho === 'number' && typeof p.golesVisitantePredicho === 'number'
+  ).length ?? 0;
+
+  const totalPartidos = partidos.length;
+  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
+  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
 
   const onSubmit = (data: FormValues) => {
+    const initial = initialRef.current.pronosticos;
+    const pronosticosToSave = data.pronosticos
+      .reduce<CrearPronosticosBatchRequest['pronosticos']>((acc, p, i) => {
+        const init = initial[i];
+        if (!init) return acc;
+        if (p.golesLocalPredicho === init.golesLocalPredicho && p.golesVisitantePredicho === init.golesVisitantePredicho) return acc;
+        acc.push({ idPartido: partidos[i].id, golesLocalPredicho: Number(p.golesLocalPredicho), golesVisitantePredicho: Number(p.golesVisitantePredicho) });
+        return acc;
+      }, []);
+    if (pronosticosToSave.length === 0) return;
     const payload: CrearPronosticosBatchRequest = {
       idQuiniela: quinielaId,
-      pronosticos: data.pronosticos.map((p) => ({
-        idPartido: p.idPartido,
-        golesLocalPredicho: Number(p.golesLocalPredicho),
-        golesVisitantePredicho: Number(p.golesVisitantePredicho),
-      })),
+      pronosticos: pronosticosToSave,
+      idParticipacion: quiniela?.participacionId ?? null,
     };
     guardarPronosticos.mutate(payload, {
       onSuccess: () => { reset(data); showSnackbar('Pronósticos guardados', 'success'); },
@@ -232,12 +285,7 @@ export default function QuinielaDetail() {
   };
 
   const toggleGroup = (grupo: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(grupo)) next.delete(grupo);
-      else next.add(grupo);
-      return next;
-    });
+    setExpandedGroup((prev) => (prev === grupo ? null : grupo));
   };
 
   if (isLoading) return <LoadingScreen />;
@@ -247,12 +295,9 @@ export default function QuinielaDetail() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <IconButton onClick={() => window.history.back()} sx={{ color: 'rgba(255,255,255,0.6)' }}><ArrowBackIcon /></IconButton>
         <Alert severity="error" sx={{ flex: 1, borderRadius: 2 }}>Error al cargar la quiniela</Alert>
-      </Box>
-    );
+    </Box>
+  );
   }
-
-  const entries = leaderboard ? [...leaderboard].sort((a, b) => a.posicion - b.posicion) : [];
-  const currentUserEntry = entries.find((e) => e.usuario.id === currentUser?.id);
 
   return (
     <Box sx={{ pb: 12 }}>
@@ -358,13 +403,13 @@ export default function QuinielaDetail() {
               <Box key={g.grupo} sx={{ mb: 2 }}>
                 <Box
                   onClick={() => toggleGroup(g.grupo)}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: expandedGroups.has(g.grupo) ? 1.5 : 0 }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: expandedGroup === g.grupo ? 1.5 : 0 }}
                 >
-                  {expandedGroups.has(g.grupo) ? <KeyboardArrowUpIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} /> : <KeyboardArrowDownIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />}
+                  {expandedGroup === g.grupo ? <KeyboardArrowUpIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} /> : <KeyboardArrowDownIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />}
                   <Typography sx={{ fontWeight: 800, color: '#0D5BFF', fontSize: '1rem' }}>Grupo {g.grupo}</Typography>
                 </Box>
 
-                {expandedGroups.has(g.grupo) && (
+                {expandedGroup === g.grupo && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     {g.partidos.map((p) => {
                       const index = partidos.findIndex((pt) => pt.id === p.id);
@@ -423,7 +468,7 @@ export default function QuinielaDetail() {
               <Box sx={{ position: 'fixed', bottom: { xs: 72, md: 0 }, left: { md: 250 }, right: 0, p: 2, bgcolor: 'rgba(11, 18, 32, 0.9)', backdropFilter: 'blur(8px)', borderTop: '1px solid rgba(255,255,255,0.1)', zIndex: 10 }}>
                 <Box sx={{ maxWidth: { md: 1440 }, mx: 'auto', px: { md: 4 } }}>
                   <Button type="submit" variant="contained" fullWidth size="large" disabled={!isDirty || guardarPronosticos.isPending} sx={{ py: 1.5, fontWeight: 700, fontSize: '1rem', minHeight: 52 }}>
-                    {guardarPronosticos.isPending ? 'Guardando...' : dirtyCount > 0 ? `Guardar Pronósticos (${dirtyCount})` : 'Guardar Pronósticos'}
+                    {guardarPronosticos.isPending ? 'Guardando...' : 'Guardar Pronósticos'}
                   </Button>
                 </Box>
               </Box>
@@ -474,12 +519,50 @@ export default function QuinielaDetail() {
           {entries.length > 0 && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {entries.map((entry, i) => (
-                <LeaderboardRow key={entry.usuario.id} entry={entry} nextEntry={i < entries.length - 1 ? entries[i + 1] : undefined} isCurrentUser={entry.usuario.id === currentUser?.id} />
+                <LeaderboardRow key={entry.usuario.id} entry={entry} nextEntry={i < entries.length - 1 ? entries[i + 1] : undefined} isCurrentUser={entry.usuario.id === currentUser?.id} onClick={() => setSelectedUserId(entry.usuario.id)} />
               ))}
             </Box>
           )}
         </Box>
       )}
+
+      <Dialog open={!!selectedUserId} onClose={() => setSelectedUserId(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ width: 28, height: 28, bgcolor: '#0D5BFF', fontSize: '0.7rem' }}>
+            {selectedUser?.usuario.nombre.charAt(0).toUpperCase()}
+          </Avatar>
+          {selectedUser?.usuario.nombre}
+          {selectedUser && (
+            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', ml: 'auto' }}>
+              {selectedUser.puntosTotales} pts
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent sx={{ px: { xs: 1.5, sm: 3 } }}>
+          {loadingUserPronos && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Cargando pronósticos...</Typography>
+            </Box>
+          )}
+          {!loadingUserPronos && (!userPronosticos?.pronosticos || userPronosticos.pronosticos.length === 0) && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)' }}>Sin pronósticos disponibles</Typography>
+            </Box>
+          )}
+          {!loadingUserPronos && userPronosticos?.pronosticos && userPronosticos.pronosticos.length > 0 && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+              {userPronosticos.pronosticos
+                .sort((a, b) => new Date(a.partido.fechaHora).getTime() - new Date(b.partido.fechaHora).getTime())
+                .map((pr) => <PronosticoCard key={pr.id} pronostico={pr} />)}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button onClick={() => setSelectedUserId(null)} variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.2)' }}>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

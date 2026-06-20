@@ -9,7 +9,7 @@ import type { TablaGruposDTO } from '../models/TablaGruposDTO';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class GruposFifaService {
+export class GruposService {
     /**
      * Actualizar resultado de un partido
      * @param id

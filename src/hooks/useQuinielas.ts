@@ -46,6 +46,14 @@ export function useUnirseQuiniela() {
   });
 }
 
+export function usePronosticosDeUsuario(quinielaId: number, usuarioId: number | null) {
+  return useQuery({
+    queryKey: ['pronosticos', quinielaId, 'usuario', usuarioId],
+    queryFn: () => PronSticosService.getPronosticosDeUsuario(quinielaId, usuarioId!),
+    enabled: !!quinielaId && !!usuarioId,
+  });
+}
+
 export function useMisPronosticos(quinielaId: number) {
   return useQuery({
     queryKey: ['pronosticos', quinielaId],

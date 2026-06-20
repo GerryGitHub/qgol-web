@@ -34,22 +34,22 @@ export default function Resultados() {
         Resultados
       </Typography>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 1 }}>
         {partidos.map((p) => (
-          <Box key={p.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 3, p: 2.5, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', textAlign: 'center' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
-              <FlagIcon country={p.equipoLocal} size={16} />
-              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: '1.2rem', color: '#0D5BFF', mx: 1 }}>
-                {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
+          <Box key={p.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 1.5, p: 1, border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.25, mb: 0.25, flexWrap: 'wrap' }}>
+              <FlagIcon country={p.equipoLocal} size={10} />
+              <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.6rem', wordBreak: 'break-word' }}>{p.equipoLocal}</Typography>
+              <Typography sx={{ fontWeight: 900, fontSize: '0.85rem', color: '#0D5BFF', mx: 0.25 }}>
+                {p.golesLocalReal ?? '?'}—{p.golesVisitanteReal ?? '?'}
               </Typography>
-              <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.75rem', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
-              <FlagIcon country={p.equipoVisitante} size={16} />
+              <Typography sx={{ fontWeight: 600, color: '#fff', fontSize: '0.6rem', wordBreak: 'break-word' }}>{p.equipoVisitante}</Typography>
+              <FlagIcon country={p.equipoVisitante} size={10} />
             </Box>
-            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', mb: 0.75 }}>
+            <Typography sx={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.5rem', mb: 0.25 }}>
               {formatFecha(p.fechaHora)} — {formatHora(p.fechaHora)}
             </Typography>
-            <Typography sx={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, display: 'inline', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 1, px: 1, py: 0.25 }}>
+            <Typography sx={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, display: 'inline', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 0.5, px: 0.5, py: 0.1 }}>
               Finalizado
             </Typography>
           </Box>

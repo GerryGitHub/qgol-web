@@ -18,8 +18,6 @@ import {
   LinearProgress,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import StarsIcon from '@mui/icons-material/Stars';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -165,17 +163,27 @@ function EstadoChip({ estado }: { estado: string }) {
   );
 }
 
-interface GrupoConPartidos {
-  grupo: string;
-  partidos: Array<{
-    id: number;
-    equipoLocal: string;
-    equipoVisitante: string;
-    golesLocalReal?: number;
-    golesVisitanteReal?: number;
-    fechaHora: string;
-    estado: string;
-  }>;
+function formatDayLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const fmt = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  const key = fmt(d);
+  if (key === fmt(today)) return 'Hoy';
+  if (key === fmt(tomorrow)) return 'Mañana';
+  const label = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+interface PartidoPreview {
+  id: number;
+  equipoLocal: string;
+  equipoVisitante: string;
+  golesLocalReal?: number;
+  golesVisitanteReal?: number;
+  fechaHora: string;
+  estado: string;
 }
 
 export default function QuinielaDetail() {
@@ -184,11 +192,12 @@ export default function QuinielaDetail() {
   const showSnackbar = useSnackbarStore((s) => s.show);
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
-  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
+  const finalized = quiniela?.estado === 'FINALIZADA';
+  const currentTab = finalized ? 1 : tab;
   const { data: misPronosticos } = useMisPronosticos(quinielaId);
   const { data: leaderboard } = useLeaderboard(quinielaId);
   const { data: userPronosticos, isLoading: loadingUserPronos } = usePronosticosDeUsuario(quinielaId, selectedUserId);
@@ -197,32 +206,35 @@ export default function QuinielaDetail() {
   const currentUserEntry = entries.find((e) => e.usuario.id === currentUser?.id);
   const guardarPronosticos = useGuardarPronosticos();
 
-  const partidos = quiniela?.partidos ?? [];
+  const todosPartidos: PartidoPreview[] = useMemo(
+    () => (quiniela?.partidos ?? []).map((p) => ({
+      id: p.id,
+      equipoLocal: p.equipoLocal,
+      equipoVisitante: p.equipoVisitante,
+      golesLocalReal: p.golesLocalReal,
+      golesVisitanteReal: p.golesVisitanteReal,
+      fechaHora: p.fechaHora,
+      estado: p.estado,
+    })),
+    [quiniela]
+  );
 
-  const grupos: GrupoConPartidos[] = useMemo(() => {
-    const map = new Map<string, GrupoConPartidos['partidos']>();
-    for (const p of partidos) {
-      if (!p.grupo) continue;
-      if (!map.has(p.grupo)) map.set(p.grupo, []);
-      map.get(p.grupo)!.push({
-        id: p.id,
-        equipoLocal: p.equipoLocal,
-        equipoVisitante: p.equipoVisitante,
-        golesLocalReal: p.golesLocalReal,
-        golesVisitanteReal: p.golesVisitanteReal,
-        fechaHora: p.fechaHora,
-        estado: p.estado,
-      });
+  const partidosPendientes = useMemo(
+    () => todosPartidos
+      .filter((p) => p.estado === 'PENDIENTE')
+      .sort((a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime()),
+    [todosPartidos]
+  );
+
+  const partidosPorDia = useMemo(() => {
+    const map = new Map<string, PartidoPreview[]>();
+    for (const p of partidosPendientes) {
+      const day = p.fechaHora.slice(0, 10);
+      if (!map.has(day)) map.set(day, []);
+      map.get(day)!.push(p);
     }
-    return Array.from(map.entries())
-      .map(([grupo, partidos]) => ({
-        grupo,
-        partidos: [...partidos].sort(
-          (a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime()
-        ),
-      }))
-      .sort((a, b) => a.grupo.localeCompare(b.grupo));
-  }, [partidos]);
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [partidosPendientes]);
 
   const pronosticoMap = useMemo(() => {
     const map = new Map<number, PronosticoItemRequest>();
@@ -239,7 +251,7 @@ export default function QuinielaDetail() {
   }, [misPronosticos]);
 
   const defaultValues = useMemo((): FormValues => ({
-    pronosticos: partidos.map((p) => {
+    pronosticos: partidosPendientes.map((p) => {
       const existing = pronosticoMap.get(p.id);
       return {
         idPartido: p.id,
@@ -247,7 +259,7 @@ export default function QuinielaDetail() {
         golesVisitantePredicho: existing?.golesVisitantePredicho ?? '',
       };
     }),
-  }), [partidos, pronosticoMap]);
+  }), [partidosPendientes, pronosticoMap]);
 
   const { register, handleSubmit, reset, watch, formState: { isDirty } } = useForm<FormValues>({ defaultValues });
 
@@ -259,9 +271,9 @@ export default function QuinielaDetail() {
     (p) => typeof p.golesLocalPredicho === 'number' && typeof p.golesVisitantePredicho === 'number'
   ).length ?? 0;
 
-  const totalPartidos = partidos.length;
-  const pronosticosPendientes = totalPartidos - pronosticosCompletados;
-  const progreso = totalPartidos > 0 ? Math.round((pronosticosCompletados / totalPartidos) * 100) : 0;
+  const totalPendientes = partidosPendientes.length;
+  const pendientesPorHacer = totalPendientes - pronosticosCompletados;
+  const progreso = totalPendientes > 0 ? Math.round((pronosticosCompletados / totalPendientes) * 100) : 0;
 
   const onSubmit = (data: FormValues) => {
     const initial = initialRef.current.pronosticos;
@@ -270,7 +282,7 @@ export default function QuinielaDetail() {
         const init = initial[i];
         if (!init) return acc;
         if (p.golesLocalPredicho === init.golesLocalPredicho && p.golesVisitantePredicho === init.golesVisitantePredicho) return acc;
-        acc.push({ idPartido: partidos[i].id, golesLocalPredicho: Number(p.golesLocalPredicho), golesVisitantePredicho: Number(p.golesVisitantePredicho) });
+        acc.push({ idPartido: partidosPendientes[i].id, golesLocalPredicho: Number(p.golesLocalPredicho), golesVisitantePredicho: Number(p.golesVisitantePredicho) });
         return acc;
       }, []);
     if (pronosticosToSave.length === 0) return;
@@ -282,10 +294,6 @@ export default function QuinielaDetail() {
     guardarPronosticos.mutate(payload, {
       onSuccess: () => { reset(data); showSnackbar('Pronósticos guardados', 'success'); },
     });
-  };
-
-  const toggleGroup = (grupo: string) => {
-    setExpandedGroup((prev) => (prev === grupo ? null : grupo));
   };
 
   if (isLoading) return <LoadingScreen />;
@@ -320,7 +328,7 @@ export default function QuinielaDetail() {
           <QrCode2Icon sx={{ fontSize: 18 }} />
         </IconButton>
         <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem' }}>
-          {totalPartidos} partidos
+          {todosPartidos.length} partidos
         </Typography>
       </Box>
 
@@ -345,14 +353,23 @@ export default function QuinielaDetail() {
       </Dialog>
 
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ flex: 1, '& .MuiTabs-indicator': { bgcolor: '#0D5BFF' } }}>
-          <Tab label="Mis Pronósticos" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
+        <Tabs value={currentTab} onChange={(_, v) => setTab(v)} sx={{ flex: 1, '& .MuiTabs-indicator': { bgcolor: '#0D5BFF' } }}>
+          {!finalized && <Tab label="Mis Pronósticos" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />}
           <Tab label="Posiciones" sx={{ color: 'rgba(255,255,255,0.5)', '&.Mui-selected': { color: '#fff' } }} />
         </Tabs>
         <PuntosInfo variant="icon" />
       </Box>
 
-      {tab === 0 && (
+      {finalized && quiniela?.ganadorNombre && (
+        <Box sx={{ bgcolor: 'rgba(255,215,0,0.1)', borderRadius: 2, p: 2, mb: 2, border: '1px solid rgba(255,215,0,0.3)', textAlign: 'center' }}>
+          <EmojiEventsIcon sx={{ fontSize: 36, color: '#FFD700' }} />
+          <Typography sx={{ color: '#FFD700', fontWeight: 800, fontSize: '1.1rem', mt: 0.5 }}>
+            Ganador: {quiniela.ganadorNombre}
+          </Typography>
+        </Box>
+      )}
+
+      {!finalized && tab === 0 && (
         <Box>
           {guardarPronosticos.isError && (
             <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{getErrorMessage(guardarPronosticos.error)}</Alert>
@@ -364,7 +381,7 @@ export default function QuinielaDetail() {
                 Pronósticos
               </Typography>
               <Typography sx={{ color: '#fff', fontSize: '0.7rem', fontWeight: 700 }}>
-                {pronosticosCompletados}/{totalPartidos}
+                {pronosticosCompletados}/{totalPendientes}
               </Typography>
             </Box>
             <LinearProgress
@@ -384,37 +401,32 @@ export default function QuinielaDetail() {
               <Typography sx={{ color: '#00B86B', fontSize: '0.6rem', fontWeight: 600 }}>
                 {pronosticosCompletados} completados
               </Typography>
-              {pronosticosPendientes > 0 && (
+              {pendientesPorHacer > 0 && (
                 <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>
-                  {pronosticosPendientes} pendientes
+                  {pendientesPorHacer} pendientes
                 </Typography>
               )}
             </Box>
           </Box>
 
-          {grupos.length === 0 && (
+          {partidosPendientes.length === 0 && (
             <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', py: 4, textAlign: 'center' }}>
-              No hay partidos disponibles
+              No hay partidos pendientes por pronosticar
             </Typography>
           )}
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-            {grupos.map((g) => (
-              <Box key={g.grupo} sx={{ mb: 2 }}>
-                <Box
-                  onClick={() => toggleGroup(g.grupo)}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', mb: expandedGroup === g.grupo ? 1.5 : 0 }}
-                >
-                  {expandedGroup === g.grupo ? <KeyboardArrowUpIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} /> : <KeyboardArrowDownIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />}
-                  <Typography sx={{ fontWeight: 800, color: '#0D5BFF', fontSize: '1rem' }}>Grupo {g.grupo}</Typography>
-                </Box>
+            {partidosPorDia.map(([day, partidos]) => {
+              const dayIndex = partidosPendientes.indexOf(partidos[0]);
 
-                {expandedGroup === g.grupo && (
+              return (
+                <Box key={day} sx={{ mb: 2.5 }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, ml: 0.5 }}>
+                    {formatDayLabel(day)}
+                  </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    {g.partidos.map((p) => {
-                      const index = partidos.findIndex((pt) => pt.id === p.id);
-                      const pronostico = pronosticoMap.get(p.id);
-                      const isEditable = p.estado === 'PENDIENTE';
+                    {partidos.map((p, i) => {
+                      const index = dayIndex + i;
 
                       return (
                         <Box key={p.id} sx={{ bgcolor: 'rgba(11, 18, 32, 0.3)', borderRadius: 3, p: 2, border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}>
@@ -423,48 +435,33 @@ export default function QuinielaDetail() {
                             <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'right', minWidth: 0, wordBreak: 'break-word' }}>
                               {p.equipoLocal}
                             </Typography>
-
-                            {isEditable && index >= 0 ? (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                                  {...register(`pronosticos.${index}.golesLocalPredicho`)} />
-                                <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
-                                <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
-                                  {...register(`pronosticos.${index}.golesVisitantePredicho`)} />
-                              </Box>
-                            ) : (
-                              <Typography sx={{ fontWeight: 900, fontSize: '1rem', color: p.estado === 'FINALIZADO' ? '#fff' : 'rgba(255,255,255,0.3)', mx: 0.5, flexShrink: 0 }}>
-                                {p.golesLocalReal ?? '?'} — {p.golesVisitanteReal ?? '?'}
-                              </Typography>
-                            )}
-
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                              <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                                {...register(`pronosticos.${index}.golesLocalPredicho`)} />
+                              <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.65rem' }}>-</Typography>
+                              <TextField type="number" slotProps={{ htmlInput: { min: 0, max: 99, sx: { textAlign: 'center', width: 26, p: '4px 1px', fontWeight: 800, fontSize: '0.8rem' } } }} variant="outlined" size="small" disabled={guardarPronosticos.isPending}
+                                {...register(`pronosticos.${index}.golesVisitantePredicho`)} />
+                            </Box>
                             <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.7rem', textAlign: 'left', minWidth: 0, wordBreak: 'break-word' }}>
                               {p.equipoVisitante}
                             </Typography>
                             <FlagIcon country={p.equipoVisitante} size={16} />
                           </Box>
-
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 1 }}>
                             <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.55rem' }}>
                               {formatFecha(p.fechaHora)} — {formatHora(p.fechaHora)}
                             </Typography>
                             <EstadoChip estado={p.estado} />
                           </Box>
-
-                          {p.estado === 'FINALIZADO' && pronostico && (
-                            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textAlign: 'center', mt: 0.75 }}>
-                              Tu pronóstico: {pronostico.golesLocalPredicho} — {pronostico.golesVisitantePredicho}
-                            </Typography>
-                          )}
                         </Box>
                       );
                     })}
                   </Box>
-                )}
-              </Box>
-            ))}
+                </Box>
+              );
+            })}
 
-            {grupos.length > 0 && (
+            {partidosPendientes.length > 0 && (
               <Box sx={{ position: 'fixed', bottom: { xs: 72, md: 0 }, left: { md: 250 }, right: 0, p: 2, bgcolor: 'rgba(11, 18, 32, 0.9)', backdropFilter: 'blur(8px)', borderTop: '1px solid rgba(255,255,255,0.1)', zIndex: 10 }}>
                 <Box sx={{ maxWidth: { md: 1440 }, mx: 'auto', px: { md: 4 } }}>
                   <Button type="submit" variant="contained" fullWidth size="large" disabled={!isDirty || guardarPronosticos.isPending} sx={{ py: 1.5, fontWeight: 700, fontSize: '1rem', minHeight: 52 }}>
@@ -477,7 +474,7 @@ export default function QuinielaDetail() {
         </Box>
       )}
 
-      {tab === 1 && (
+      {currentTab === 1 && (
         <Box>
           {currentUserEntry && (
             <Box sx={{ bgcolor: 'rgba(13,91,255,0.1)', borderRadius: 2, p: 1.5, mb: 2 }}>

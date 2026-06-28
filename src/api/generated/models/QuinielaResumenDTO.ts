@@ -7,5 +7,7 @@ export type QuinielaResumenDTO = {
     nombre: string;
     codigoInvitacion: string;
     puntosTotales: number;
+    estado: string;
+    ganadorNombre?: string | null;
 };
 

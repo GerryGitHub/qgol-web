@@ -196,7 +196,7 @@ export default function QuinielaDetail() {
   const [qrOpen, setQrOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const setDayRef = useCallback((day: string, el: HTMLDivElement | null) => {
+  const getDayRef = useCallback((day: string) => (el: HTMLDivElement | null) => {
     if (el) dayRefs.current.set(day, el);
     else dayRefs.current.delete(day);
   }, []);
@@ -436,7 +436,7 @@ export default function QuinielaDetail() {
               const dayIndex = partidosPendientes.indexOf(partidos[0]);
 
               return (
-                <Box key={day} ref={(el) => setDayRef(day, el)} sx={{ mb: 2.5 }}>
+                <Box key={day} ref={getDayRef(day)} sx={{ mb: 2.5 }}>
                   <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, ml: 0.5 }}>
                     {formatDayLabel(day)}
                   </Typography>

@@ -126,6 +126,9 @@ export default function PuntosInfo({ variant = 'card' }: Props) {
           <Typography sx={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.6rem', mt: 2, textAlign: 'center' }}>
             Los puntos se calculan automáticamente al finalizar cada partido.
           </Typography>
+          <Typography sx={{ color: '#F59E0B', fontSize: '0.65rem', mt: 1, textAlign: 'center', fontWeight: 600, bgcolor: 'rgba(245,158,11,0.1)', borderRadius: 1, px: 1.5, py: 0.75, border: '1px solid rgba(245,158,11,0.2)' }}>
+            ⚠️ Solo cuenta el marcador en tiempo regular (no incluye tiempos extra ni penales).
+          </Typography>
         </Box>
       </Dialog>
     </>

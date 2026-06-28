@@ -12,5 +12,7 @@ export type QuinielaDetalleDTO = {
     participantes: Array<UsuarioDTO>;
     partidos: Array<PartidoDTO>;
     participacionId?: number | null;
+    estado: string;
+    ganadorNombre?: string | null;
 };
 

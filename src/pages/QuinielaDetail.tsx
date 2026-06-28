@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Box,
@@ -189,11 +189,17 @@ interface PartidoPreview {
 export default function QuinielaDetail() {
   const { id } = useParams<{ id: string }>();
   const quinielaId = Number(id);
+  const [searchParams] = useSearchParams();
   const showSnackbar = useSnackbarStore((s) => s.show);
   const currentUser = useAuthStore((s) => s.usuario);
   const [tab, setTab] = useState(0);
   const [qrOpen, setQrOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const setDayRef = useCallback((day: string, el: HTMLDivElement | null) => {
+    if (el) dayRefs.current.set(day, el);
+    else dayRefs.current.delete(day);
+  }, []);
 
   const { data: quiniela, isLoading } = useQuinielaDetalle(quinielaId);
   const finalized = quiniela?.estado === 'FINALIZADA';
@@ -235,6 +241,16 @@ export default function QuinielaDetail() {
     }
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [partidosPendientes]);
+
+  useEffect(() => {
+    if (partidosPorDia.length === 0) return;
+    const targetDay = searchParams.get('dia');
+    if (!targetDay) return;
+    const el = dayRefs.current.get(targetDay);
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    }
+  }, [partidosPorDia, searchParams]);
 
   const pronosticoMap = useMemo(() => {
     const map = new Map<number, PronosticoItemRequest>();
@@ -420,7 +436,7 @@ export default function QuinielaDetail() {
               const dayIndex = partidosPendientes.indexOf(partidos[0]);
 
               return (
-                <Box key={day} sx={{ mb: 2.5 }}>
+                <Box key={day} ref={(el) => setDayRef(day, el)} sx={{ mb: 2.5 }}>
                   <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, ml: 0.5 }}>
                     {formatDayLabel(day)}
                   </Typography>

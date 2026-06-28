@@ -98,7 +98,7 @@ export default function ProximoPartidoCard({ partido, quinielaId, quinielaNombre
       <Button
         fullWidth
         variant="contained"
-        onClick={() => navigate(`/quiniela/${quinielaId}`)}
+        onClick={() => navigate(`/quiniela/${quinielaId}?dia=${partido.fechaHora.slice(0, 10)}`)}
         sx={{ py: 1, fontWeight: 700, fontSize: '0.8rem' }}
       >
         Pronosticar ahora

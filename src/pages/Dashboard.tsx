@@ -169,10 +169,39 @@ export default function Dashboard() {
       )}
 
       {quinielas && quinielas.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {quinielas.map((q) => (
-            <QuinielaCard key={q.id} quiniela={q} onShowQR={setQrQuiniela} />
-          ))}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {(() => {
+            const activas = quinielas.filter((q) => q.estado !== 'FINALIZADA');
+            const finalizadas = quinielas.filter((q) => q.estado === 'FINALIZADA');
+            return (
+              <>
+                {activas.length > 0 && (
+                  <>
+                    <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Activas
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {activas.map((q) => (
+                        <QuinielaCard key={q.id} quiniela={q} onShowQR={setQrQuiniela} />
+                      ))}
+                    </Box>
+                  </>
+                )}
+                {finalizadas.length > 0 && (
+                  <>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: 0.5, mt: activas.length > 0 ? 1 : 0 }}>
+                      Finalizadas
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      {finalizadas.map((q) => (
+                        <QuinielaCard key={q.id} quiniela={q} onShowQR={setQrQuiniela} />
+                      ))}
+                    </Box>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </Box>
       )}
 
